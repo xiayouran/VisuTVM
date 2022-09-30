@@ -1,0 +1,9 @@
+fn (%input0: Tensor[(1, 16, 64, 64), float32], %conv1.weight: Tensor[(16, 16, 1, 1), float32], %conv2.weight: Tensor[(16, 16, 1, 1), float32], %conv3.weight: Tensor[(16, 16, 1, 1), float32]) {
+  %0 = add(%input0, 0.1f);
+  %1 = nn.conv2d(%0, %conv1.weight, padding=[0, 0, 0, 0], channels=16, kernel_size=[1, 1]);
+  %2 = add(%1, 0.1f);
+  %3 = add(%1, %2);
+  %4 = nn.conv2d(%3, %conv2.weight, padding=[0, 0, 0, 0], channels=16, kernel_size=[1, 1]);
+  %5 = nn.conv2d(%3, %conv3.weight, padding=[0, 0, 0, 0], channels=16, kernel_size=[1, 1]);
+  add(%4, %5)
+}

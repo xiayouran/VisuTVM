@@ -1,0 +1,15 @@
+fn (%input0: Tensor[(1, 3, 32, 32), float32], %conv1.weight: Tensor[(64, 3, 3, 3), float32], %bn.weight: Tensor[(64), float32], %bn.bias: Tensor[(64), float32], %bn.running_mean: Tensor[(64), float32], %bn.running_var: Tensor[(64), float32], %linear.weight: Tensor[(10, 1600), float32], %linear.bias: Tensor[(10), float32]) {
+  %0 = nn.conv2d(%input0, %conv1.weight, strides=[3, 3], padding=[0, 0, 0, 0], channels=64, kernel_size=[3, 3]);
+  %1 = nn.batch_norm(%0, %bn.weight, %bn.bias, %bn.running_mean, %bn.running_var);
+  %2 = %1.0;
+  %3 = nn.relu(%2);
+  %4 = nn.avg_pool2d(%3, pool_size=[2, 2], strides=[2, 2], padding=[0, 0, 0, 0], count_include_pad=True);
+  %5 = reshape(%4, newshape=[-1, 1, 1, 1]);
+  %6 = squeeze(%5, axis=[1, 2, 3]);
+  %7 = expand_dims(%6, axis=0);
+  %8 = transpose(%linear.weight, axes=[1, 0]);
+  %9 = nn.matmul(%7, %8, units=None);
+  %10 = squeeze(%9, axis=[0]);
+  %11 = add(%10, %linear.bias);
+  nn.softmax(%11, axis=0)
+}

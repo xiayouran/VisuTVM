@@ -1,0 +1,8 @@
+fn (%x: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %w1: Tensor[(16, 16, 1, 1), float32] /* ty=Tensor[(16, 16, 1, 1), float32] */) -> Tensor[(1, 16, 64, 64), float32] {
+  %0 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 16, 64, 64), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 16, 64, 64), float32] */) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %1 = nn.conv2d(%x, %w1, padding=[0, 0, 0, 0], channels=16, kernel_size=[1, 1]) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %2 = multiply(%0, 2f /* ty=float32 */) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %3 = add(%1, %2) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %4 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 16, 64, 64), float32] */) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  add(%4, %4) /* ty=Tensor[(1, 16, 64, 64), float32] */
+} /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 1, 1), float32]) -> Tensor[(1, 16, 64, 64), float32] */

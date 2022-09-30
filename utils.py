@@ -1,0 +1,52 @@
+# -*- coding:utf-8 -*-
+# Author:   liyanpeng
+# Email:    youran.xia@foxmail.com
+# Datetime: 2022/9/19 20:34
+# Filename: utils.py
+import os
+import glob
+from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF
+
+
+def relay_ir2txt(context, file_name='example', is_ap=False):
+    save_path = 'relay_ir'
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    if is_ap:
+        file_name += '_ap.txt'
+    else:
+        file_name += '_bp.txt'
+
+    with open(os.path.join(save_path, file_name), 'w', encoding='utf-8') as f:
+        f.writelines(str(context))
+
+
+def visu_relay_ir(bp_file, ap_file, save_name):
+    g = VisuGraph(txt_file=bp_file, save_name=save_name)
+    g.codegen()
+
+    if '_fo_' in ap_file:
+        g = VisuGraphFuseOps(txt_file=ap_file, save_name=save_name)
+    elif '_ruf_' in ap_file or '_fc_' in ap_file or '_ecs_' in ap_file or '_si_':
+        g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
+    else:
+        # assert False, "not support the pass to visu now!"
+        # TODO 由于没有合适的case，部分Pass优化后的Relay IR可视化可能会失败
+        #  有些Pass在优化神经网络(目前只在resnet18上进行了测试)的时候可能不起作用，因此Pass优化前后的可视化结果是一样的
+        g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
+    g.codegen()
+
+
+def run_all_examples(scan_dir='relay_ir'):
+    bp_list = glob.glob(os.path.join(scan_dir, '*_bp.txt'))
+    for bp_file in bp_list:
+        ap_file = bp_file.replace('_bp', '_ap')
+        save_name = bp_file.replace('.txt', '')
+
+        print("Parsing {} and {}".format(bp_file, ap_file))
+        visu_relay_ir(bp_file, ap_file, save_name)
+
+
+if __name__ == '__main__':
+    run_all_examples()

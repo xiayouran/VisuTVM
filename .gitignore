@@ -1,0 +1,9 @@
+# Pycharm cahce
+.idea/
+__pycache__/
+
+# ignore version tmp
+visu_tvm_*
+
+# output files
+output/
