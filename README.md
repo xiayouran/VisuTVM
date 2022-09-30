@@ -83,4 +83,4 @@ python examples/example.py --passname FuseOps
 
 ## Q&A
 
-在使用过程中遇到可视化失败的Relay IR网络结构，可以在 [issues]() 上提出你的问题，如果有任何好的想法，也可以进行交流哦👏👏👏
+在使用过程中遇到可视化失败的Relay IR网络结构，可以在 [issues](https://github.com/xiayouran/VisuTVM/issues) 上提出你的问题，如果有任何好的想法，也可以进行交流哦👏👏👏
