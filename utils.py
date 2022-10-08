@@ -28,7 +28,7 @@ def visu_relay_ir(bp_file, ap_file, save_name):
 
     if '_fo_' in ap_file:
         g = VisuGraphFuseOps(txt_file=ap_file, save_name=save_name)
-    elif '_ruf_' in ap_file or '_fc_' in ap_file or '_ecs_' in ap_file or '_si_':
+    elif '_ruf_' in ap_file or '_fc_' in ap_file or '_ecs_' in ap_file or '_si_' in ap_file or '_fm_' in ap_file:
         g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
     else:
         # assert False, "not support the pass to visu now!"

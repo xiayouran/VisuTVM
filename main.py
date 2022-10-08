@@ -8,9 +8,9 @@ from utils import visu_relay_ir
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--before_pass', '-bp', type=str, default='relay_ir/example_bp.txt',
+parser.add_argument('--before_pass', '-bp', type=str, default='relay_ir/example_fo_bp.txt',
                     help='relay ir before pass txt file')
-parser.add_argument('--after_pass', '-ap', type=str, default='relay_ir/example_ap.txt',
+parser.add_argument('--after_pass', '-ap', type=str, default='relay_ir/example_fo_ap.txt',
                     help='relay ir after pass txt file')
 parser.add_argument('--save_name', '-sn', type=str, default='example',
                     help='png save name')

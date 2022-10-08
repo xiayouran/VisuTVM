@@ -20,5 +20,6 @@ PASS_MAP = {
     'SimplifyExpr': {'name': 'se', 'pass': transform.SimplifyExpr()},
     'CanonicalizeCast': {'name': 'cc', 'pass': transform.CanonicalizeCast()},
     'CanonicalizeOps': {'name': 'co', 'pass': transform.CanonicalizeOps()},
-    'FlattenAtrousConv': {'name': 'fac', 'pass': transform.FlattenAtrousConv()}
+    'FlattenAtrousConv': {'name': 'fac', 'pass': transform.FlattenAtrousConv()},
+    'FastMath': {'name': 'fm', 'pass': transform.FastMath()},
 }

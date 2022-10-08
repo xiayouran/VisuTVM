@@ -57,6 +57,7 @@ python examples/example.py --passname FuseOps
 - CanonicalizeCast`(no case)`
 - CanonicalizeOps`(no case)`
 - FlattenAtrousConv`(no case)`
+- FastMath
 
 ## Preview
 
