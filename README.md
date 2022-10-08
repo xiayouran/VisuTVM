@@ -53,7 +53,7 @@ python examples/example.py --passname FuseOps
 - CombineParallelDense`(no case)`
 - CombineParallelBatchMatmul`(no case)`
 - FoldScaleAxis
-- SimplifyExpr`(no case)`
+- SimplifyExpr
 - CanonicalizeCast`(no case)`
 - CanonicalizeOps`(no case)`
 - FlattenAtrousConv`(no case)`
