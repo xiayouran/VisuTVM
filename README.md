@@ -54,10 +54,11 @@ python examples/example.py --passname FuseOps
 - CombineParallelBatchMatmul
 - FoldScaleAxis
 - SimplifyExpr
-- CanonicalizeCast`(no case)`
+- CanonicalizeCast
 - CanonicalizeOps`(no case)`
 - FlattenAtrousConv
 - FastMath
+- ConvertLayout
 
 ## Preview
 

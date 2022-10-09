@@ -22,4 +22,5 @@ PASS_MAP = {
     'CanonicalizeOps': {'name': 'co', 'pass': transform.CanonicalizeOps()},
     'FlattenAtrousConv': {'name': 'fac', 'pass': transform.FlattenAtrousConv()},
     'FastMath': {'name': 'fm', 'pass': transform.FastMath()},
+    'ConvertLayout': {'name': 'cl', 'pass': transform.ConvertLayout()},
 }
