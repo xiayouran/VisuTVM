@@ -323,7 +323,7 @@ class VisuGraphCPC2D(VisuGraph):
                 match_op = re.search(pattern2, info[1])
                 if match_op:
                     node_map[info[0]] = info[1][:-2]
-                continue
+                    continue
 
             index = info[1].find('(')
             if index == 0:

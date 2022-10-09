@@ -17,7 +17,7 @@ Visualize the TVM's Relay IR structure, and support the visualization of Pass op
 <img src="imgs/preview.png" alt="Visu Relay IR"/>
 </p>
 
-👉note：In the example(b), the nodes with the same color are fused.
+    👉note：In the example(b), the nodes with the same color are fused.
 
 ## Usage
 
