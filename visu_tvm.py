@@ -7,7 +7,7 @@ import re
 import random
 
 
-__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF"]
+__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF", "VisuGraphCPC2D"]
 
 
 class PNode(object):
@@ -294,6 +294,56 @@ class VisuGraphRUF(VisuGraph):
                 args_list = re.findall(pattern1, info[1])
                 args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
             self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list, color=self.random_color(), style='filled')
+            for n in args_list:
+                if not self.nodes.get(n, ''):
+                    self.nodes[n] = IRNode(name=n, label=n, color='white')
+
+
+class VisuGraphCPC2D(VisuGraph):
+    """Visu CombineParallelConv2D /
+            CombineParallelDense /
+            CombineParallelBatchMatmul Pass Relay IR"""
+    def __init__(self, txt_file, save_name='example') -> None:
+        super(VisuGraphCPC2D, self).__init__(txt_file, save_name)
+        self.op_args_map = dict()
+        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
+
+    def parse_node(self):
+        pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
+        pattern2 = re.compile(r'(%\d+\.\d+)')
+
+        node_map = dict()
+
+        for info in self.parse_res:
+            assert len(info) == 2, 'length of info must be 2!!!'
+            # if '(%' not in info[1] and '%' in info[1]:
+            # if '(%' not in info[1] and '.0' in info[1]:
+            if '(%' not in info[1]:
+                # '%16 = %15.1;
+                match_op = re.search(pattern2, info[1])
+                if match_op:
+                    node_map[info[0]] = info[1][:-2]
+                continue
+
+            index = info[1].find('(')
+            if index == 0:
+                # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
+                args_list = info[1][1:-1].split(', ')
+                node_map[info[0]] = args_list
+                continue
+            if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
+                args_list = info[1][index + 1:-1].split(', ')
+                args_list = [node_map.get(arg, arg) for arg in args_list]
+            else:
+                args_list = re.findall(pattern1, info[1])
+                args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
+
+                if isinstance(args_list[0], list):
+                    # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
+                    args_list = args_list[0]
+
+            self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list,
+                                         color=self.random_color(), style='filled')
             for n in args_list:
                 if not self.nodes.get(n, ''):
                     self.nodes[n] = IRNode(name=n, label=n, color='white')

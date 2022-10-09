@@ -49,9 +49,9 @@ python examples/example.py --passname FuseOps
 - EliminateCommonSubexpr
 - FoldConstant
 - SimplifyInference
-- CombineParallelConv2D`(no case)`
-- CombineParallelDense`(no case)`
-- CombineParallelBatchMatmul`(no case)`
+- CombineParallelConv2D
+- CombineParallelDense
+- CombineParallelBatchMatmul
 - FoldScaleAxis
 - SimplifyExpr
 - CanonicalizeCast`(no case)`
@@ -80,6 +80,13 @@ python examples/example.py --passname FuseOps
 <table align="center"><tr>
 <td><img src="imgs/simplify_inference_bp.png"></td>
 <td><img src="imgs/simplify_inference_ap.png"></td>
+</tr></table>
+
+🚀️ CombineParallelConv2D
+
+<table align="center"><tr>
+<td><img src="imgs/combine_parallel_conv2d_bp.png"></td>
+<td><img src="imgs/combine_parallel_conv2d_ap.png"></td>
 </tr></table>
 
 ## Q&A
