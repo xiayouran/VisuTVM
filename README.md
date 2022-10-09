@@ -56,7 +56,7 @@ python examples/example.py --passname FuseOps
 - SimplifyExpr
 - CanonicalizeCast`(no case)`
 - CanonicalizeOps`(no case)`
-- FlattenAtrousConv`(no case)`
+- FlattenAtrousConv
 - FastMath
 
 ## Preview
@@ -87,6 +87,13 @@ python examples/example.py --passname FuseOps
 <table align="center"><tr>
 <td><img src="imgs/combine_parallel_conv2d_bp.png"></td>
 <td><img src="imgs/combine_parallel_conv2d_ap.png"></td>
+</tr></table>
+
+🚀️ FlattenAtrousConv
+
+<table align="center"><tr>
+<td><img src="imgs/flatten_atrous_conv_bp.png"></td>
+<td><img src="imgs/flatten_atrous_conv_ap.png"></td>
 </tr></table>
 
 ## Q&A

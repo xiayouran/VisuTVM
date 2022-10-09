@@ -1,0 +1,5 @@
+fn (%x: Tensor[(10, 32, 32, 16), float32], %weight: Tensor[(3, 3, 16, 64), float32]) {
+  %0 = nn.space_to_batch_nd(%x, block_shape=[2, 2], paddings=[[0, 0], [0, 0]]) /* span=SpaceToBatchND:0:0 */;
+  %1 = nn.conv2d(%0, %weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3], data_layout="NHWC", kernel_layout="HWIO") /* span=Conv2D:0:0 */;
+  nn.batch_to_space_nd(%1, block_shape=[2, 2], crops=[[0, 0], [0, 0]]) /* span=output:0:0 */
+}

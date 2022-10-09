@@ -266,7 +266,8 @@ class VisuGraphRUF(VisuGraph):
             FoldConstant /
             SimplifyInference /
             FastMath /
-            SimplifyExpr Pass Relay IR"""
+            SimplifyExpr /
+            FlattenAtrousConv Pass Relay IR"""
     def __init__(self, txt_file, save_name='example') -> None:
         super(VisuGraphRUF, self).__init__(txt_file, save_name)
         self.op_args_map = dict()
