@@ -3,6 +3,9 @@
 # Email:    youran.xia@foxmail.com
 # Datetime: 2022/9/19 20:49
 # Filename: from_onnx.py
+"""
+onnx version: 1.12.0
+"""
 import onnx
 
 from tvm import relay

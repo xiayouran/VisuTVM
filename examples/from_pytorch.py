@@ -3,6 +3,9 @@
 # Email:    youran.xia@foxmail.com
 # Datetime: 2022/9/19 17:10
 # Filename: from_pytorch.py
+"""
+pytorch version: 1.7.1
+"""
 import torch
 from torchvision import models
 
