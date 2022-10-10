@@ -105,24 +105,38 @@ class VisuGraph(object):
     def parse_node(self):
         # pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*)')
         pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
+        pattern2 = re.compile(r'(%\d+\.\d+)')
 
         node_map = dict()
 
         for info in self.parse_res:
             assert len(info) == 2, 'length of info must be 2!!!'
-            if '(%' not in info[1] and '%' in info[1]:
+            # if '(%' not in info[1] and '%' in info[1]:
+            if '(%' not in info[1]:
                 # '%16 = %15.0;
-                node_map[info[0]] = info[1][:-2]
-                continue
+                match_op = re.search(pattern2, info[1])
+                if match_op:
+                    node_map[info[0]] = info[1][:-2]
+                    continue
 
             index = info[1].find('(')
-            if 'add(' in info[1] or 'multiply(' in info[1]:
+            if index == 0:
+                # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
+                args_list = info[1][1:-1].split(', ')
+                node_map[info[0]] = args_list
+                continue
+            if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
                 # add multiply 两数之间的运算
-                args_list = info[1][index+1:-1].split(', ')
+                args_list = info[1][index + 1:-1].split(', ')
                 args_list = [node_map.get(arg, arg) for arg in args_list]
             else:
                 args_list = re.findall(pattern1, info[1])
                 args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
+
+                if isinstance(args_list[0], list):
+                    # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
+                    args_list = args_list[0]
+
             self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list)
             for n in args_list:
                 if not self.nodes.get(n, ''):
@@ -175,6 +189,7 @@ class VisuGraphFuseOps(VisuGraph):
         pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)')
         pattern3 = re.compile(r'(%\d+)\((.+)\)')
         pattern4 = re.compile(r'(%[a-z]*\d+),?')
+        pattern5 = re.compile(r'(%[a-z]?\d+\.\d+)')
 
         # 对解析的结果进一步划分成fn和op
         pnodes = dict()
@@ -209,7 +224,7 @@ class VisuGraphFuseOps(VisuGraph):
             for i, args in enumerate(fn_args):
                 self.op_args_map[args] = op_args[i]
 
-            # FuseOps --> 分析fn
+            # FunseOP --> 分析fn
             ops_list = ops.split(';')
             for ops_ in ops_list:
                 if ' = ' in ops_:
@@ -218,11 +233,18 @@ class VisuGraphFuseOps(VisuGraph):
 
                     if '(%' not in ops_:
                         # '%29 = %p052.0'
-                        node_map[match_op[0]] = match_op[1][:-2]
-                        continue
+                        match_op_ = re.search(pattern5, match_op[1])
+                        if match_op_:
+                            node_map[match_op[0]] = match_op[1][:-2]
+                            continue
 
                     # index = ops_.find('(')
                     index = match_op[-1].find('(')
+                    if index == 0:
+                        # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
+                        args_list = match_op[-1][1:-1].split(', ')
+                        node_map[match_op[0]] = args_list
+                        continue
                     if 'add(' in ops_:
                         # 含=的add
                         args_list = match_op[-1][index+1:-1].split(', ')
@@ -232,6 +254,10 @@ class VisuGraphFuseOps(VisuGraph):
                         # 含=的op
                         args_list = re.findall(pattern4, match_op[-1])
                         args_list = [node_map.get(arg, arg) for arg in args_list]
+
+                        if isinstance(args_list[0], list):
+                            # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
+                            args_list = args_list[0]
 
                     args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
 

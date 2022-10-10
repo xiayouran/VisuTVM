@@ -62,6 +62,46 @@ def mc_case():
     return relay.Function([data, kernel, bias, a, b], r)
 
 
+
+def fo_case1():
+    """FuseOps"""
+    # transform.FuseOps()
+    x = relay.var("x", shape=(10, 20))
+    y = relay.add(x, relay.const(1, "float32"))
+    z = relay.exp(y)
+    w = relay.squeeze(z)
+
+    return relay.Function([x], w)
+
+
+def fo_case2(shape=(1, 16, 64, 64)):
+    """FuseOps"""
+    # transform.FuseOps(fuse_opt_level=2)
+    x = relay.var("x", shape=shape)
+    x = relay.add(x, relay.const(1, "float32"))
+    y = relay.nn.conv2d(x, relay.var("w1"), kernel_size=(3, 3), padding=(1, 1), channels=16)
+    # this is the next dominator.
+    y1 = relay.add(relay.const(1, "float32"), y)
+    y = relay.add(y, y1)
+    # second path
+    z2 = relay.nn.conv2d(y, relay.var("w2"), kernel_size=(1, 1), padding=(0, 0), channels=16)
+    z3 = relay.nn.conv2d(y, relay.var("w3"), kernel_size=(3, 3), padding=(1, 1), channels=16)
+    # add can only be fused to z1
+    z = relay.add(z2, z3)
+
+    return relay.Function(relay.analysis.free_vars(z), z)
+
+
+def fo_case3(shape=(1, 16, 64, 64)):
+    x = relay.var("x", shape=shape)
+    pooled = relay.nn.max_pool2d(x, pool_size=(2, 2), strides=(2, 2), padding=(0, 0))
+    upsampled = relay.nn.upsampling(pooled, scale_h=2, scale_w=2, layout="NCHW")
+    concat = relay.concatenate((upsampled, x), axis=1)
+    out = relay.add(concat, relay.const(1, "float32"))
+
+    return relay.Function(relay.analysis.free_vars(out), out)
+
+
 if __name__ == '__main__':
     f = mc_case()
     mod = tvm.IRModule.from_expr(f)
