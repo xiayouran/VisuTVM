@@ -7,7 +7,7 @@ import re
 import random
 
 
-__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF", "VisuGraphCPC2D"]
+__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF", "VisuGraphCPC2D", "VisuGraphMC"]
 
 
 class PNode(object):
@@ -209,7 +209,7 @@ class VisuGraphFuseOps(VisuGraph):
             for i, args in enumerate(fn_args):
                 self.op_args_map[args] = op_args[i]
 
-            # FunseOP --> 分析fn
+            # FuseOps --> 分析fn
             ops_list = ops.split(';')
             for ops_ in ops_list:
                 if ' = ' in ops_:
@@ -350,3 +350,111 @@ class VisuGraphCPC2D(VisuGraph):
             for n in args_list:
                 if not self.nodes.get(n, ''):
                     self.nodes[n] = IRNode(name=n, label=n, color='white')
+
+
+class VisuGraphMC(VisuGraphFuseOps):
+    """Visu MergeComposite Pass Relay IR"""
+    def __init__(self, txt_file, save_name='example') -> None:
+        super(VisuGraphMC, self).__init__(txt_file, save_name)
+        self.op_args_map = dict()
+        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
+
+    def parse_node(self):
+        pattern1 = re.compile(r'(%\d+).+{(.+)}')
+        pattern1_ = re.compile(r'(%[a-zA-Z]*_*\d+_\d+):')
+        pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)')
+        pattern3 = re.compile(r'([a-z]+)\((.+)\)')
+        pattern4 = re.compile(r'(%[a-zA-Z]*_*\d+_\d+),?|(%[a-z]*\d+),?')
+
+        # 对解析的结果进一步划分成fn和op
+        pnodes = dict()
+        for fn_str in self.parse_res:
+            if ' fn ' in fn_str:
+                match_op = re.search(pattern1, fn_str).groups(0)
+                args = re.findall(pattern1_, fn_str)  # fn的输入参数
+                pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args, body=match_op[-1])
+            elif ' = ' in fn_str:
+                match_op = re.search(pattern2, fn_str).groups(0)
+                args = match_op[-1].split(', ')  # op的输入参数
+                pnodes[match_op[0]] = PNode(name=match_op[0], type='op', inputs=args, body=match_op[1])
+            else:
+                match_op = re.search(pattern3, fn_str).groups(0)
+                args = match_op[-1].split(', ')
+                pnodes[''] = PNode(name='', type='op', inputs=args, body=match_op[0])
+
+        # 将op进行细化
+        node_map = dict()
+        for k, v in pnodes.items():
+            if v.type == 'fn':
+                v.color = self.random_color()
+                continue
+            pre_info = pnodes.get(v.body, '')
+            if not pre_info:
+                ops = v.body
+                fn_args = v.inputs
+                color = self.random_color()
+            else:
+                ops = pre_info.body
+                fn_args = pre_info.inputs
+                color = pre_info.color
+
+            op_args = v.inputs
+
+            # 做实参与形参映射
+            for i, args in enumerate(fn_args):
+                if args == op_args[i]:
+                    continue
+                self.op_args_map[args] = op_args[i]
+
+            # FuseOps --> 分析fn
+            ops_list = ops.split(';')
+            for ops_ in ops_list:
+                if ' = ' in ops_:
+                    # fn中含有多个op
+                    match_op = ops_.split(' = ')
+
+                    if '(%' not in ops_:
+                        # '%29 = %p052.0'
+                        node_map[match_op[0]] = match_op[1][:-2]
+                        continue
+
+                    # index = ops_.find('(')
+                    index = match_op[-1].find('(')
+                    if 'add(' in ops_:
+                        # 含=的add
+                        args_list = match_op[-1][index + 1:-1].split(', ')
+                        # args_list = re.findall(pattern4, match_op[-1])
+                        args_list = [node_map.get(arg, arg) for arg in args_list]
+                    else:
+                        # 含=的op
+                        args_list = re.findall(pattern4, match_op[-1])
+                        args_list = [node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
+
+                    args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
+
+                    self.nodes[match_op[0]] = IRNode(name=match_op[0], label=match_op[-1][:index], inputs=args_list,
+                                                     color=color, style='filled')
+                    for n in args_list:
+                        if not self.nodes.get(n, ''):
+                            self.nodes[n] = IRNode(name=n, label=n, color='white')
+
+                else:
+                    # op中不含=
+                    index = ops_.find('(')
+                    if 'add(' in ops_:
+                        # add 加常数
+                        args_list = ops_[index + 1:-1].split(', ')
+                    elif index == -1:
+                        # body中不含()
+                        args_list = fn_args
+                    else:
+                        # conv2d, batchnorm, relu, maxpool2d, adaptive_avg_pool2d, squeeze
+                        args_list = re.findall(pattern4, ops_)
+                        args_list = [arg[0] if arg[0] else arg[1] for arg in args_list]
+                    args_list = [node_map.get(arg, arg) for arg in args_list]
+                    args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
+
+                    self.nodes[k] = IRNode(name=k, label=ops_[:index] if index != -1 else ops_, inputs=args_list, color=color, style='filled')
+                    for n in args_list:
+                        if not self.nodes.get(n, ''):
+                            self.nodes[n] = IRNode(name=n, label=n, color='white')

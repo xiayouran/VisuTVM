@@ -59,6 +59,7 @@ python examples/example.py --passname FuseOps
 - FlattenAtrousConv
 - FastMath
 - ConvertLayout
+- MergeComposite
 
 ## Preview
 

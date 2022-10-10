@@ -4,6 +4,7 @@
 # Datetime: 2022/9/30 10:46
 # Filename: pass_map.py
 from tvm.relay import transform
+from pass_args import desired_layouts, pattern_table
 
 
 PASS_MAP = {
@@ -22,5 +23,6 @@ PASS_MAP = {
     'CanonicalizeOps': {'name': 'co', 'pass': transform.CanonicalizeOps()},
     'FlattenAtrousConv': {'name': 'fac', 'pass': transform.FlattenAtrousConv()},
     'FastMath': {'name': 'fm', 'pass': transform.FastMath()},
-    'ConvertLayout': {'name': 'cl', 'pass': transform.ConvertLayout()},
+    'ConvertLayout': {'name': 'cl', 'pass': transform.ConvertLayout(desired_layouts)},
+    'MergeComposite': {'name': 'mc', 'pass': transform.MergeComposite(pattern_table)},
 }

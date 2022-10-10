@@ -7,9 +7,8 @@ import tvm
 from tvm import relay
 from tvm.relay import transform, testing
 
-import numpy as np
-
 from utils import relay_ir2txt
+from pass_args import desired_layouts, pattern_table
 
 
 def cc_case(shape=(1, 16, 7, 7)):
@@ -39,3 +38,35 @@ def cl_case():
     y = relay.nn.relu(y)
     y = relay.Function([x, weight], y)
     return y
+
+
+def mc_case():
+    """MergeComposite"""
+    # transform.MergeComposite(pattern_table)
+    data = relay.var("data", shape=(1, 512, 28, 28))
+    kernel = relay.var("kernel", shape=(256, 512, 1, 1))
+    bias = relay.var("bias", shape=(256,))
+    a = relay.var("a", shape=(1, 256, 28, 28))
+    b = relay.var("b", shape=(1, 256, 28, 28))
+
+    conv_node = relay.nn.conv2d(
+        data, kernel, kernel_size=(1, 1), padding=(0, 0), strides=(1, 1)
+    )
+
+    bias_node = relay.nn.bias_add(conv_node, bias)
+    relu_node = relay.nn.relu(bias_node)
+    add_node = relay.add(relu_node, a)
+    relu_node_2 = relay.nn.relu(add_node)
+    r = relay.multiply(relu_node_2, b)
+
+    return relay.Function([data, kernel, bias, a, b], r)
+
+
+if __name__ == '__main__':
+    f = mc_case()
+    mod = tvm.IRModule.from_expr(f)
+    mod_func = mod["main"]
+    relay_ir2txt(mod_func, file_name='tvm_case', is_ap=False)
+
+    mod_opt = testing.run_opt_pass(mod_func, transform.MergeComposite(pattern_table))
+    relay_ir2txt(mod_opt, file_name='tvm_case', is_ap=True)

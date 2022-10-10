@@ -5,7 +5,7 @@
 # Filename: utils.py
 import os
 import glob
-from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF, VisuGraphCPC2D
+from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF, VisuGraphCPC2D, VisuGraphMC
 
 
 def relay_ir2txt(context, file_name='example', is_ap=False):
@@ -33,6 +33,8 @@ def visu_relay_ir(bp_file, ap_file, save_name):
         g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
     elif '_cpc2d_' in ap_file or '_cpd_' in ap_file or '_cpbm_' in ap_file:
         g = VisuGraphCPC2D(txt_file=ap_file, save_name=save_name)
+    elif '_mc_' in ap_file:
+        g = VisuGraphMC(txt_file=ap_file, save_name=save_name)
     else:
         # assert False, "not support the pass to visu now!"
         # TODO 由于没有合适的case，部分Pass优化后的Relay IR可视化可能会失败
