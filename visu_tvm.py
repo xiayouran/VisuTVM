@@ -100,7 +100,7 @@ class VisuGraph(object):
         graph = Digraph(name='RelayIR')
         exec(self.node_code)
         exec(self.edge_code)
-        graph.render(filename=self.save_name, format='png')
+        graph.render(filename=self.save_name, format='png', cleanup=True)
 
     def parse_node(self):
         # pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*)')
