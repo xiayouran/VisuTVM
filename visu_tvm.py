@@ -388,8 +388,8 @@ class VisuGraphMC(VisuGraphFuseOps):
     def parse_node(self):
         pattern1 = re.compile(r'(%\d+).+{(.+)}')
         pattern1_ = re.compile(r'(%[a-zA-Z]*_*\d+_\d+):')
-        pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)')
-        pattern3 = re.compile(r'([a-z]+)\((.+)\)')
+        pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)|(%\d+).+?(\s[a-z]+)\((.+)\)')
+        pattern3 = re.compile(r'(%\d+)\((.+)\)|([a-z]+)\((.+)\)')
         pattern4 = re.compile(r'(%[a-zA-Z]*_*\d+_\d+),?|(%[a-z]*\d+),?')
 
         # 对解析的结果进一步划分成fn和op
@@ -401,10 +401,14 @@ class VisuGraphMC(VisuGraphFuseOps):
                 pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args, body=match_op[-1])
             elif ' = ' in fn_str:
                 match_op = re.search(pattern2, fn_str).groups(0)
+                # '%2 = subtract(%a, %b);'
+                match_op = [arg for arg in match_op if arg]
                 args = match_op[-1].split(', ')  # op的输入参数
                 pnodes[match_op[0]] = PNode(name=match_op[0], type='op', inputs=args, body=match_op[1])
             else:
                 match_op = re.search(pattern3, fn_str).groups(0)
+                # '%3(%2, %b)'
+                match_op = [arg for arg in match_op if arg]
                 args = match_op[-1].split(', ')
                 pnodes[''] = PNode(name='', type='op', inputs=args, body=match_op[0])
 
