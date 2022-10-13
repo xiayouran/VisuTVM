@@ -5,6 +5,8 @@
 # Filename: utils.py
 import os
 import glob
+import numpy as np
+
 from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF, VisuGraphCPC2D, VisuGraphMC
 
 
@@ -29,7 +31,7 @@ def visu_relay_ir(bp_file, ap_file, save_name):
     if '_fo_' in ap_file:
         g = VisuGraphFuseOps(txt_file=ap_file, save_name=save_name)
     elif '_ruf_' in ap_file or '_fc_' in ap_file or '_ecs_' in ap_file or '_si_' in ap_file or '_fm_' in ap_file or \
-            '_se_' in ap_file or '_fac_' in ap_file or '_cc_' in ap_file:
+            '_se_' in ap_file or '_fac_' in ap_file or '_cc_' in ap_file or '_cl_' in ap_file or '_fsa_' in ap_file:
         g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
     elif '_cpc2d_' in ap_file or '_cpd_' in ap_file or '_cpbm_' in ap_file:
         g = VisuGraphCPC2D(txt_file=ap_file, save_name=save_name)
@@ -53,5 +55,10 @@ def run_all_examples(scan_dir='relay_ir'):
         visu_relay_ir(bp_file, ap_file, save_name)
 
 
+def _get_positive_scale(size):
+    return np.random.uniform(0.5, 1, size=size).astype("float32")
+
+
 if __name__ == '__main__':
     run_all_examples()
+    run_all_examples(scan_dir='relay_ir/tvm_case')
