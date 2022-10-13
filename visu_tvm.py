@@ -127,7 +127,7 @@ class VisuGraph(object):
                 continue
             if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
                 # add multiply 两数之间的运算
-                args_list = info[1][index + 1:-1].split(', ')
+                args_list = info[1][index + 1:-1].split(', ')[:2]
                 args_list = [node_map.get(arg, arg) for arg in args_list]
             else:
                 args_list = re.findall(pattern1, info[1])
@@ -247,7 +247,7 @@ class VisuGraphFuseOps(VisuGraph):
                         continue
                     if 'add(' in ops_:
                         # 含=的add
-                        args_list = match_op[-1][index+1:-1].split(', ')
+                        args_list = match_op[-1][index+1:-1].split(', ')[:2]
                         # args_list = re.findall(pattern4, match_op[-1])
                         args_list = [node_map.get(arg, arg) for arg in args_list]
                     else:
@@ -272,7 +272,7 @@ class VisuGraphFuseOps(VisuGraph):
                     index = ops_.find('(')
                     if 'add(' in ops_:
                         # add 加常数
-                        args_list = ops_[index+1:-1].split(', ')
+                        args_list = ops_[index+1:-1].split(', ')[:2]
                     else:
                         # conv2d, batchnorm, relu, maxpool2d, adaptive_avg_pool2d, squeeze
                         args_list = re.findall(pattern4, ops_)
@@ -317,7 +317,7 @@ class VisuGraphRUF(VisuGraph):
 
             index = info[1].find('(')
             if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
-                args_list = info[1][index+1:-1].split(', ')
+                args_list = info[1][index+1:-1].split(', ')[:2]
                 args_list = [node_map.get(arg, arg) for arg in args_list]
             else:
                 args_list = re.findall(pattern1, info[1])
@@ -361,7 +361,7 @@ class VisuGraphCPC2D(VisuGraph):
                 node_map[info[0]] = args_list
                 continue
             if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
-                args_list = info[1][index + 1:-1].split(', ')
+                args_list = info[1][index + 1:-1].split(', ')[:2]
                 args_list = [node_map.get(arg, arg) for arg in args_list]
             else:
                 args_list = re.findall(pattern1, info[1])
@@ -452,7 +452,7 @@ class VisuGraphMC(VisuGraphFuseOps):
                     index = match_op[-1].find('(')
                     if 'add(' in ops_:
                         # 含=的add
-                        args_list = match_op[-1][index + 1:-1].split(', ')
+                        args_list = match_op[-1][index + 1:-1].split(', ')[:2]
                         # args_list = re.findall(pattern4, match_op[-1])
                         args_list = [node_map.get(arg, arg) for arg in args_list]
                     else:
@@ -473,7 +473,7 @@ class VisuGraphMC(VisuGraphFuseOps):
                     index = ops_.find('(')
                     if 'add(' in ops_:
                         # add 加常数
-                        args_list = ops_[index + 1:-1].split(', ')
+                        args_list = ops_[index + 1:-1].split(', ')[:2]
                     elif index == -1:
                         # body中不含()
                         args_list = fn_args
