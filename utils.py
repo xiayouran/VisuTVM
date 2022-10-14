@@ -8,7 +8,7 @@ import glob
 import warnings
 import numpy as np
 
-from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF
+from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF, VisuGraphMC
 
 
 def relay_ir2txt(context, file_name='example', is_ap=False):
@@ -29,12 +29,14 @@ def visu_relay_ir(bp_file, ap_file, save_name):
     g = VisuGraph(txt_file=bp_file, save_name=save_name)
     g.codegen()
 
-    if '_fo_' in ap_file or '_mc_' in ap_file:
+    if '_fo_' in ap_file:
         g = VisuGraphFuseOps(txt_file=ap_file, save_name=save_name)
     elif '_ruf_' in ap_file or '_fc_' in ap_file or '_ecs_' in ap_file or '_si_' in ap_file or '_fm_' in ap_file or \
             '_se_' in ap_file or '_fac_' in ap_file or '_cc_' in ap_file or '_cl_' in ap_file or '_fsa_' in ap_file or \
             '_cpc2d_' in ap_file or '_cpd_' in ap_file or '_cpbm_' in ap_file:
         g = VisuGraphRUF(txt_file=ap_file, save_name=save_name)
+    elif '_mc_' in ap_file:
+        g = VisuGraphMC(txt_file=ap_file, save_name=save_name)
     else:
         warnings.warn("not support the pass to visu now! ==> {}".format(ap_file))
         # TODO 由于没有合适的case，部分Pass优化后的Relay IR可视化可能会失败

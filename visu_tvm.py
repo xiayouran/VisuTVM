@@ -7,7 +7,7 @@ import re
 import random
 
 
-__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF"]
+__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF", "VisuGraphMC"]
 
 
 class PNode(object):
@@ -250,7 +250,7 @@ class VisuGraphFuseOps(VisuGraph):
         pattern1 = re.compile(r'(%\d+).+{(.+)}')
         pattern1_ = re.compile(r'(%[a-z]*\d+):|(%[a-zA-Z_]*\d+_\d+):')
         pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)|(%\d+).+?(\s[a-z]+)\((.+)\)')
-        pattern3 = re.compile(r'(%\d+)\((.+)\)|([a-z]+)\((.+)\)')
+        pattern3 = re.compile(r'([%\da-z]+)\((.+)\)')
 
         # 对解析的结果进一步划分成fn和op
         pnodes = dict()
@@ -269,7 +269,6 @@ class VisuGraphFuseOps(VisuGraph):
             else:
                 match_op = re.search(pattern3, fn_str).groups(0)
                 # '%3(%2, %b)'
-                match_op = [arg for arg in match_op if arg]
                 args = match_op[-1].split(', ')
                 pnodes[''] = PNode(name='', type='op', inputs=args, body=match_op[0])
 
@@ -326,3 +325,58 @@ class VisuGraphRUF(VisuGraph):
             for n in args_list:
                 if not self.nodes.get(n, ''):
                     self.nodes[n] = IRNode(name=n, label=n, color='white')
+
+
+class VisuGraphMC(VisuGraphFuseOps):
+    """Visu MergeComposite Pass Relay IR"""
+    # 显示算子融合后的名称
+    def __init__(self, txt_file, save_name='example') -> None:
+        super(VisuGraphMC, self).__init__(txt_file, save_name)
+        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
+
+    def parse_txt(self, txt_file=''):
+        assert txt_file, "You must have a txt file!!!"
+        with open(txt_file, 'r') as f:
+            lines = f.readlines()
+
+        pattern1 = re.compile(r'\s/\*.+?\*/')
+        pattern2 = re.compile(r'(%\d+) = (.+)')
+        pattern3 = re.compile(r'Com.+?"([a-z\d_]+)"')
+        skip_flag = False
+        for line in lines[1:-1]:
+            if '}' in line:
+                skip_flag = False
+                continue
+            elif 'fn' in line and 'Com' in line:
+                skip_flag = True
+                composite = re.search(pattern3, line).groups(0)
+                line = line.replace('fn', 'fn_' + composite[0])
+            elif skip_flag:
+                continue
+            line = re.sub(pattern1, '', line)
+            line = line.strip().strip(';')
+            match_op = re.findall(pattern2, line)
+            if match_op:
+                self.parse_res.extend(match_op)
+            else:
+                self.parse_res.append(('', line))
+
+    def split_fn_op(self):
+        pattern1 = re.compile(r'(%[a-z]*\d+):|(%[a-zA-Z_]*\d+_\d+):')
+        pattern2 = re.compile(r'([%\da-z]+)\((.+)\)')
+
+        pnodes = dict()
+        for output_str, body_str in self.parse_res:
+            if 'fn_' in body_str:
+                args_list = re.findall(pattern1, body_str)  # fn的输入参数
+                args_list = [self.node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
+                index = body_str.find(' ')
+                pnodes[output_str] = PNode(name=output_str, type='fn', inputs=args_list, body=body_str[3:index])
+            else:
+                match_op = re.search(pattern2, body_str).groups(0)
+                # '%2 = subtract(%a, %b);'
+                args = match_op[-1].split(', ')  # op的输入参数
+                pnodes[output_str if output_str else ''] = PNode(name=output_str if output_str else '', type='op',
+                                                                 inputs=args, body=match_op[0])
+
+        return pnodes
