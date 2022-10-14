@@ -104,7 +104,7 @@ class VisuGraph(object):
         graph.render(filename=self.save_name, format='png', cleanup=True)
 
     def get_node_args(self, output_node, body_node):
-        pattern1 = re.compile(r'(%[a-zA-Z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
+        pattern1 = re.compile(r'(%[a-zA-Z]*([\d._a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
         pattern2 = re.compile(r'(%[a-z]?\d+\.\d+)')
 
         if '(%' not in body_node:
@@ -248,7 +248,7 @@ class VisuGraphFuseOps(VisuGraph):
 
     def split_fn_op(self):
         pattern1 = re.compile(r'(%\d+).+{(.+)}')
-        pattern1_ = re.compile(r'(%[a-z]*\d+):|(%[a-zA-Z]*_*\d+_\d+):')
+        pattern1_ = re.compile(r'(%[a-z]*\d+):|(%[a-zA-Z_]*\d+_\d+):')
         pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)|(%\d+).+?(\s[a-z]+)\((.+)\)')
         pattern3 = re.compile(r'(%\d+)\((.+)\)|([a-z]+)\((.+)\)')
 
