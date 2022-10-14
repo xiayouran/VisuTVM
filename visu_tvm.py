@@ -240,7 +240,8 @@ class VisuGraphFuseOps(VisuGraph):
                         args_list = fn_args
                     args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
 
-                    self.nodes[k] = IRNode(name=k, label=ops_[:index], inputs=args_list, color=color, style='filled')
+                    self.nodes[k] = IRNode(name=k, label=ops_[:index] if index != -1 else ops_, inputs=args_list,
+                                           color=color, style='filled')
                     for n in args_list:
                         if not self.nodes.get(n, ''):
                             self.nodes[n] = IRNode(name=n, label=n, color='white')
