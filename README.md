@@ -28,6 +28,9 @@ export PYTHONPATH=$PYTHONPATH:${your-path}/VisuTVM
 # visu relay ir(default: FuseOps)
 python main.py -bp relay_ir/example_fo_bp.txt -ap relay_ir/example_fo_ap.txt -sn example
 
+# visu relay ir with tensor info
+python main.py -bp relay_ir/example_fo_bp.txt -ap relay_ir/example_fo_ap.txt -sn example -wi
+
 # create relay ir txt file
 python examples/example.py --passname FuseOps
 ```

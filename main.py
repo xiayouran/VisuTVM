@@ -14,6 +14,8 @@ parser.add_argument('--after_pass', '-ap', type=str, default='relay_ir/example_f
                     help='relay ir after pass txt file')
 parser.add_argument('--save_name', '-sn', type=str, default='example',
                     help='png save name')
+parser.add_argument('--with_info', '-wi', action='store_true', default=False,
+                    help='png save name')
 args = parser.parse_args()
 
 
@@ -21,6 +23,7 @@ if __name__ == '__main__':
     save_name = args.save_name
     before_pass = args.before_pass
     after_pass = args.after_pass
+    with_info = args.with_info
 
-    visu_relay_ir(before_pass, after_pass, save_name)
+    visu_relay_ir(before_pass, after_pass, save_name, with_info)
     print('Finshed!')
