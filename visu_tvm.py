@@ -7,7 +7,7 @@ import re
 import random
 
 
-__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF", "VisuGraphCPC2D", "VisuGraphMC"]
+__all__ = ["VisuGraph", "VisuGraphFuseOps", "VisuGraphRUF"]
 
 
 class PNode(object):
@@ -49,6 +49,7 @@ class VisuGraph(object):
         self.parse_res = list()
         self.save_name = 'output/visu_{}_relay_ir'.format(save_name)
         self.txt_file = txt_file
+        self.node_map = dict()
 
     def random_color(self):
         colors = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
@@ -102,40 +103,49 @@ class VisuGraph(object):
         exec(self.edge_code)
         graph.render(filename=self.save_name, format='png', cleanup=True)
 
-    def parse_node(self):
-        # pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*)')
-        pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
-        pattern2 = re.compile(r'(%\d+\.\d+)')
+    def get_node_args(self, output_node, body_node):
+        pattern1 = re.compile(r'(%[a-zA-Z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
+        pattern2 = re.compile(r'(%[a-z]?\d+\.\d+)')
 
-        node_map = dict()
+        if '(%' not in body_node:
+            # '%16 = %15.0;
+            # '%29 = %p052.0'
+            # 'ones(shape=[3, 4, 5], dtype="int32")'
+            match_op = re.search(pattern2, body_node)
+            if match_op:
+                self.node_map[output_node] = body_node[:-2]
+                return None, None
+
+        index = body_node.find('(')
+        if index == 0:
+            # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
+            args_list = body_node[1:-1].split(', ')
+            self.node_map[output_node] = args_list
+            return None, None
+
+        if 'add(' in body_node or 'multiply(' in body_node or 'divide(' in body_node:
+            # add multiply 两数之间的运算
+            args_list = body_node[index + 1:-1].split(', ')[:2]
+            args_list = [self.node_map.get(arg, arg) for arg in args_list]
+        else:
+            args_list = re.findall(pattern1, body_node)
+            # args_list = [self.node_map.get(arg[0], arg[0]) for arg in args_list]
+            args_list = [self.node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
+
+            if args_list and isinstance(args_list[0], list):
+                # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
+                args_list = args_list[0]
+
+        return args_list, index
+
+    def parse_node(self):
+        self.node_map = dict()
 
         for info in self.parse_res:
             assert len(info) == 2, 'length of info must be 2!!!'
-            # if '(%' not in info[1] and '%' in info[1]:
-            if '(%' not in info[1]:
-                # '%16 = %15.0;
-                match_op = re.search(pattern2, info[1])
-                if match_op:
-                    node_map[info[0]] = info[1][:-2]
-                    continue
-
-            index = info[1].find('(')
-            if index == 0:
-                # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
-                args_list = info[1][1:-1].split(', ')
-                node_map[info[0]] = args_list
+            args_list, index = self.get_node_args(info[0], info[1])
+            if not args_list and not index:
                 continue
-            if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
-                # add multiply 两数之间的运算
-                args_list = info[1][index + 1:-1].split(', ')[:2]
-                args_list = [node_map.get(arg, arg) for arg in args_list]
-            else:
-                args_list = re.findall(pattern1, info[1])
-                args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
-
-                if isinstance(args_list[0], list):
-                    # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
-                    args_list = args_list[0]
 
             self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list)
             for n in args_list:
@@ -153,7 +163,8 @@ class VisuGraph(object):
 
 
 class VisuGraphFuseOps(VisuGraph):
-    """Visu FuseOP Pass Relay IR"""
+    """Visu FuseOps /
+            MergeComposite Pass Relay IR"""
     def __init__(self, txt_file, save_name='example') -> None:
         super(VisuGraphFuseOps, self).__init__(txt_file, save_name)
         self.op_args_map = dict()
@@ -184,81 +195,34 @@ class VisuGraphFuseOps(VisuGraph):
                 self.parse_res.append(line)
 
     def parse_node(self):
-        pattern1 = re.compile(r'(%\d+).+{(.+)}')
-        pattern1_ = re.compile(r'(%[a-z]*\d+):')
-        pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)')
-        pattern3 = re.compile(r'(%\d+)\((.+)\)')
-        pattern4 = re.compile(r'(%[a-z]*\d+),?')
-        pattern5 = re.compile(r'(%[a-z]?\d+\.\d+)')
-
-        # 对解析的结果进一步划分成fn和op
-        pnodes = dict()
-        for fn_str in self.parse_res:
-            if ' fn ' in fn_str:
-                match_op = re.search(pattern1, fn_str).groups(0)
-                args = re.findall(pattern1_, fn_str)    # fn的输入参数
-                pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args, body=match_op[-1])
-            elif ' = ' in fn_str:
-                match_op = re.search(pattern2, fn_str).groups(0)
-                args = match_op[-1].split(', ')     # op的输入参数
-                pnodes[match_op[0]] = PNode(name=match_op[0], type='op', inputs=args, body=match_op[1])
-            else:
-                match_op = re.search(pattern3, fn_str).groups(0)
-                args = match_op[-1].split(', ')
-                pnodes[''] = PNode(name='', type='op', inputs=args, body=match_op[0])
+        pnodes = self.split_fn_op()
 
         # 将op进行细化
-        node_map = dict()
+        self.node_map = dict()
         for k, v in pnodes.items():
-            if v.type == 'fn':
-                v.color = self.random_color()
+            pnode_info = self.get_pnode_info(v, pnodes)
+            if not pnode_info[0]:
                 continue
-            pre_info = pnodes[v.body]
-            ops = pre_info.body
-            fn_args = pre_info.inputs
-            color = pre_info.color
-
-            op_args = v.inputs
+            else:
+                ops, fn_args, color, op_args = pnode_info
 
             # 做实参与形参映射
+            assert len(fn_args) == len(op_args), "The number of elements must be the same!"
             for i, args in enumerate(fn_args):
+                if args == op_args[i]:
+                    continue
                 self.op_args_map[args] = op_args[i]
 
-            # FunseOP --> 分析fn
+            # FuseOps --> 分析fn
             ops_list = ops.split(';')
             for ops_ in ops_list:
                 if ' = ' in ops_:
                     # fn中含有多个op
                     match_op = ops_.split(' = ')
-
-                    if '(%' not in ops_:
-                        # '%29 = %p052.0'
-                        match_op_ = re.search(pattern5, match_op[1])
-                        if match_op_:
-                            node_map[match_op[0]] = match_op[1][:-2]
-                            continue
-
-                    # index = ops_.find('(')
-                    index = match_op[-1].find('(')
-                    if index == 0:
-                        # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
-                        args_list = match_op[-1][1:-1].split(', ')
-                        node_map[match_op[0]] = args_list
+                    assert len(match_op) == 2, 'length of info must be 2!!!'
+                    args_list, index = self.get_node_args(match_op[0], match_op[1])
+                    if not args_list and not index:
                         continue
-                    if 'add(' in ops_:
-                        # 含=的add
-                        args_list = match_op[-1][index+1:-1].split(', ')[:2]
-                        # args_list = re.findall(pattern4, match_op[-1])
-                        args_list = [node_map.get(arg, arg) for arg in args_list]
-                    else:
-                        # 含=的op
-                        args_list = re.findall(pattern4, match_op[-1])
-                        args_list = [node_map.get(arg, arg) for arg in args_list]
-
-                        if isinstance(args_list[0], list):
-                            # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
-                            args_list = args_list[0]
-
                     args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
 
                     self.nodes[match_op[0]] = IRNode(name=match_op[0], label=match_op[-1][:index], inputs=args_list,
@@ -266,17 +230,14 @@ class VisuGraphFuseOps(VisuGraph):
                     for n in args_list:
                         if not self.nodes.get(n, ''):
                             self.nodes[n] = IRNode(name=n, label=n, color='white')
-
                 else:
                     # op中不含=
-                    index = ops_.find('(')
-                    if 'add(' in ops_:
-                        # add 加常数
-                        args_list = ops_[index+1:-1].split(', ')[:2]
-                    else:
-                        # conv2d, batchnorm, relu, maxpool2d, adaptive_avg_pool2d, squeeze
-                        args_list = re.findall(pattern4, ops_)
-                    args_list = [node_map.get(arg, arg) for arg in args_list]
+                    args_list, index = self.get_node_args('', ops_)
+                    if not args_list and not index:
+                        continue
+                    if index == -1:
+                        # body中不含()
+                        args_list = fn_args
                     args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
 
                     self.nodes[k] = IRNode(name=k, label=ops_[:index], inputs=args_list, color=color, style='filled')
@@ -284,121 +245,20 @@ class VisuGraphFuseOps(VisuGraph):
                         if not self.nodes.get(n, ''):
                             self.nodes[n] = IRNode(name=n, label=n, color='white')
 
-
-class VisuGraphRUF(VisuGraph):
-    """Visu RemoveUnusedFunctions /
-            ToBasicBlockNormalForm /
-            EliminateCommonSubexpr /
-            FoldConstant /
-            SimplifyInference /
-            FastMath /
-            SimplifyExpr /
-            FlattenAtrousConv /
-            CanonicalizeCast /
-            ConvertLayout Pass Relay IR"""
-    def __init__(self, txt_file, save_name='example') -> None:
-        super(VisuGraphRUF, self).__init__(txt_file, save_name)
-        self.op_args_map = dict()
-        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
-
-    def parse_node(self):
-        # pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*)')
-        pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
-
-        node_map = dict()
-
-        for info in self.parse_res:
-            assert len(info) == 2, 'length of info must be 2!!!'
-            # if '(%' not in info[1] and '%' in info[1]:
-            if '(%' not in info[1] and '.0' in info[1]:
-                # '%16 = %15.0;
-                node_map[info[0]] = info[1][:-2]
-                continue
-
-            index = info[1].find('(')
-            if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
-                args_list = info[1][index+1:-1].split(', ')[:2]
-                args_list = [node_map.get(arg, arg) for arg in args_list]
-            else:
-                args_list = re.findall(pattern1, info[1])
-                args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
-            self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list, color=self.random_color(), style='filled')
-            for n in args_list:
-                if not self.nodes.get(n, ''):
-                    self.nodes[n] = IRNode(name=n, label=n, color='white')
-
-
-class VisuGraphCPC2D(VisuGraph):
-    """Visu CombineParallelConv2D /
-            CombineParallelDense /
-            CombineParallelBatchMatmul Pass Relay IR"""
-    def __init__(self, txt_file, save_name='example') -> None:
-        super(VisuGraphCPC2D, self).__init__(txt_file, save_name)
-        self.op_args_map = dict()
-        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
-
-    def parse_node(self):
-        pattern1 = re.compile(r'(%[a-z]*(\d*\.?_?[a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
-        pattern2 = re.compile(r'(%\d+\.\d+)')
-
-        node_map = dict()
-
-        for info in self.parse_res:
-            assert len(info) == 2, 'length of info must be 2!!!'
-            # if '(%' not in info[1] and '%' in info[1]:
-            # if '(%' not in info[1] and '.0' in info[1]:
-            if '(%' not in info[1]:
-                # '%16 = %15.1;
-                match_op = re.search(pattern2, info[1])
-                if match_op:
-                    node_map[info[0]] = info[1][:-2]
-                    continue
-
-            index = info[1].find('(')
-            if index == 0:
-                # %0 = (%conv1.weight, %conv1.weight, %conv1.weight)
-                args_list = info[1][1:-1].split(', ')
-                node_map[info[0]] = args_list
-                continue
-            if 'add(' in info[1] or 'multiply(' in info[1] or 'divide(' in info[1]:
-                args_list = info[1][index + 1:-1].split(', ')[:2]
-                args_list = [node_map.get(arg, arg) for arg in args_list]
-            else:
-                args_list = re.findall(pattern1, info[1])
-                args_list = [node_map.get(arg[0], arg[0]) for arg in args_list]
-
-                if isinstance(args_list[0], list):
-                    # 输入参数已经是列表，说明上一个op只有参数，没有具体的运算
-                    args_list = args_list[0]
-
-            self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list,
-                                         color=self.random_color(), style='filled')
-            for n in args_list:
-                if not self.nodes.get(n, ''):
-                    self.nodes[n] = IRNode(name=n, label=n, color='white')
-
-
-class VisuGraphMC(VisuGraphFuseOps):
-    """Visu MergeComposite Pass Relay IR"""
-    def __init__(self, txt_file, save_name='example') -> None:
-        super(VisuGraphMC, self).__init__(txt_file, save_name)
-        self.op_args_map = dict()
-        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
-
-    def parse_node(self):
+    def split_fn_op(self):
         pattern1 = re.compile(r'(%\d+).+{(.+)}')
-        pattern1_ = re.compile(r'(%[a-zA-Z]*_*\d+_\d+):')
+        pattern1_ = re.compile(r'(%[a-z]*\d+):|(%[a-zA-Z]*_*\d+_\d+):')
         pattern2 = re.compile(r'(%\d+).+?(%\d+)\((.+)\)|(%\d+).+?(\s[a-z]+)\((.+)\)')
         pattern3 = re.compile(r'(%\d+)\((.+)\)|([a-z]+)\((.+)\)')
-        pattern4 = re.compile(r'(%[a-zA-Z]*_*\d+_\d+),?|(%[a-z]*\d+),?')
 
         # 对解析的结果进一步划分成fn和op
         pnodes = dict()
         for fn_str in self.parse_res:
             if ' fn ' in fn_str:
                 match_op = re.search(pattern1, fn_str).groups(0)
-                args = re.findall(pattern1_, fn_str)  # fn的输入参数
-                pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args, body=match_op[-1])
+                args_list = re.findall(pattern1_, fn_str)  # fn的输入参数
+                args_list = [self.node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
+                pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args_list, body=match_op[-1])
             elif ' = ' in fn_str:
                 match_op = re.search(pattern2, fn_str).groups(0)
                 # '%2 = subtract(%a, %b);'
@@ -412,79 +272,56 @@ class VisuGraphMC(VisuGraphFuseOps):
                 args = match_op[-1].split(', ')
                 pnodes[''] = PNode(name='', type='op', inputs=args, body=match_op[0])
 
-        # 将op进行细化
-        node_map = dict()
-        for k, v in pnodes.items():
-            if v.type == 'fn':
-                v.color = self.random_color()
+        return pnodes
+
+    def get_pnode_info(self, v, pnodes):
+        if v.type == 'fn':
+            v.color = self.random_color()
+            return (None, )
+
+        pre_info = pnodes.get(v.body, '')
+        if not pre_info:
+            ops = v.body
+            fn_args = v.inputs
+            color = self.random_color()
+        else:
+            ops = pre_info.body
+            fn_args = pre_info.inputs
+            color = pre_info.color
+        op_args = v.inputs
+
+        return ops, fn_args, color, op_args
+
+
+class VisuGraphRUF(VisuGraph):
+    """Visu RemoveUnusedFunctions /
+            ToBasicBlockNormalForm /
+            EliminateCommonSubexpr /
+            FoldConstant /
+            SimplifyInference /
+            FastMath /
+            SimplifyExpr /
+            FlattenAtrousConv /
+            CanonicalizeCast /
+            ConvertLayout /
+            CombineParallelConv2D /
+            CombineParallelDense /
+            CombineParallelBatchMatmul Pass Relay IR"""
+    def __init__(self, txt_file, save_name='example') -> None:
+        super(VisuGraphRUF, self).__init__(txt_file, save_name)
+        self.save_name = 'output/visu_{}_relay_ir_pass'.format(save_name)
+
+    def parse_node(self):
+        self.node_map = dict()
+
+        for info in self.parse_res:
+            assert len(info) == 2, 'length of info must be 2!!!'
+            args_list, index = self.get_node_args(info[0], info[1])
+            if not args_list and not index:
                 continue
-            pre_info = pnodes.get(v.body, '')
-            if not pre_info:
-                ops = v.body
-                fn_args = v.inputs
-                color = self.random_color()
-            else:
-                ops = pre_info.body
-                fn_args = pre_info.inputs
-                color = pre_info.color
 
-            op_args = v.inputs
-
-            # 做实参与形参映射
-            for i, args in enumerate(fn_args):
-                if args == op_args[i]:
-                    continue
-                self.op_args_map[args] = op_args[i]
-
-            # FuseOps --> 分析fn
-            ops_list = ops.split(';')
-            for ops_ in ops_list:
-                if ' = ' in ops_:
-                    # fn中含有多个op
-                    match_op = ops_.split(' = ')
-
-                    if '(%' not in ops_:
-                        # '%29 = %p052.0'
-                        node_map[match_op[0]] = match_op[1][:-2]
-                        continue
-
-                    # index = ops_.find('(')
-                    index = match_op[-1].find('(')
-                    if 'add(' in ops_:
-                        # 含=的add
-                        args_list = match_op[-1][index + 1:-1].split(', ')[:2]
-                        # args_list = re.findall(pattern4, match_op[-1])
-                        args_list = [node_map.get(arg, arg) for arg in args_list]
-                    else:
-                        # 含=的op
-                        args_list = re.findall(pattern4, match_op[-1])
-                        args_list = [node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
-
-                    args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
-
-                    self.nodes[match_op[0]] = IRNode(name=match_op[0], label=match_op[-1][:index], inputs=args_list,
-                                                     color=color, style='filled')
-                    for n in args_list:
-                        if not self.nodes.get(n, ''):
-                            self.nodes[n] = IRNode(name=n, label=n, color='white')
-
-                else:
-                    # op中不含=
-                    index = ops_.find('(')
-                    if 'add(' in ops_:
-                        # add 加常数
-                        args_list = ops_[index + 1:-1].split(', ')[:2]
-                    elif index == -1:
-                        # body中不含()
-                        args_list = fn_args
-                    else:
-                        # conv2d, batchnorm, relu, maxpool2d, adaptive_avg_pool2d, squeeze
-                        args_list = re.findall(pattern4, ops_)
-                        args_list = [arg[0] if arg[0] else arg[1] for arg in args_list]
-                    args_list = [node_map.get(arg, arg) for arg in args_list]
-                    args_list = [self.op_args_map.get(arg, arg) for arg in args_list]
-
-                    self.nodes[k] = IRNode(name=k, label=ops_[:index] if index != -1 else ops_, inputs=args_list, color=color, style='filled')
-                    for n in args_list:
-                        if not self.nodes.get(n, ''):
-                            self.nodes[n] = IRNode(name=n, label=n, color='white')
+            self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list,
+                                         color=self.random_color(), style='filled')
+            for n in args_list:
+                if not self.nodes.get(n, ''):
+                    self.nodes[n] = IRNode(name=n, label=n, color='white')
