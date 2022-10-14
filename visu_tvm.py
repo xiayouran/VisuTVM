@@ -376,7 +376,7 @@ class VisuGraphMC(VisuGraphFuseOps):
                 match_op = re.search(pattern2, body_str).groups(0)
                 # '%2 = subtract(%a, %b);'
                 args = match_op[-1].split(', ')  # op的输入参数
-                pnodes[output_str if output_str else ''] = PNode(name=output_str if output_str else '', type='op',
-                                                                 inputs=args, body=match_op[0])
+                pnodes[output_str if output_str else '}'] = PNode(name=output_str if output_str else '}', type='op',
+                                                                  inputs=args, body=match_op[0])
 
         return pnodes
