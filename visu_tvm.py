@@ -111,6 +111,8 @@ class VisuGraph(object):
         graph = Digraph(name='RelayIR')
         exec(self.node_code)
         exec(self.edge_code)
+        # dot: failure to create cairo surface: out of memory ==> svg
+        # Recommend: The large model uses the svg format as the output
         graph.render(filename=self.save_name, format='png', cleanup=True)
 
     def get_node_args(self, output_node, body_node):
