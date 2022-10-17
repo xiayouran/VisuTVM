@@ -194,7 +194,7 @@ class VisuGraph(object):
 
         pattern1 = re.compile(r'(%[a-z\d_.]*):.+?\[(.+?)]')
         pattern2 = re.compile(r'->.+?\[(.+?)]')
-        pattern3 = re.compile(r'\).+?\[(.+?)]')
+        pattern3 = re.compile(r'\)\s.+?\[(.+?)]')
         pattern4 = re.compile(r'(meta\[relay\.Constant]\[\d*]).+?\[(.+?)]')
 
         self.tensor_info = dict()
@@ -254,6 +254,7 @@ class VisuGraph(object):
                         'shape': ', '.join(info[:-1]),
                         'dtype': info[-1]
                     }
+                    flag_None = ''
                     # 提取常量meta[relay.Constant][0]
                     match_res = re.findall(pattern4, tmp_str)
                     if not match_res:
@@ -299,10 +300,10 @@ class VisuGraphFuseOps(VisuGraph):
                 self.parse_res.append(line)
 
     def parse_node(self):
+        self.node_map = dict()
         pnodes = self.split_fn_op()
 
         # 将op进行细化
-        self.node_map = dict()
         for k, v in pnodes.items():
             pnode_info = self.get_pnode_info(v, pnodes)
             if not pnode_info[0]:
@@ -315,7 +316,7 @@ class VisuGraphFuseOps(VisuGraph):
             for i, args in enumerate(fn_args):
                 if args == op_args[i]:
                     continue
-                self.op_args_map[args] = op_args[i]
+                self.op_args_map[args] = self.node_map.get(op_args[i], op_args[i])
 
             # FuseOps --> 分析fn
             ops_list = ops.split(';')
@@ -369,6 +370,10 @@ class VisuGraphFuseOps(VisuGraph):
                 args_list = [self.node_map.get(arg[0], arg[0]) if arg[0] else arg[1] for arg in args_list]
                 pnodes[match_op[0]] = PNode(name=match_op[0], type='fn', inputs=args_list, body=match_op[-1])
             elif ' = ' in fn_str:
+                if '(' not in fn_str:
+                    match_op = fn_str.split(' = ')
+                    self.node_map[match_op[0]] = match_op[-1][:-3]
+                    continue
                 match_op = re.search(pattern2, fn_str).groups(0)
                 # '%2 = subtract(%a, %b);'
                 match_op = [arg for arg in match_op if arg]
