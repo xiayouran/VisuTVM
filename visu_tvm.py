@@ -22,7 +22,7 @@ class PNode(object):
 
 
 class IRNode(object):
-    def __init__(self, name='None', label='None', color='', style='', inputs=None) -> None:
+    def __init__(self, name='None', label='None', color='', style='', inputs=None, fixedsize='false') -> None:
         if inputs is None:
             inputs = []
         self.name = name
@@ -30,6 +30,8 @@ class IRNode(object):
         self.color = color
         self.style = style
         self.inputs = inputs
+        self.fixedsize = fixedsize
+        self.height = '0.1'
 
 
 class IREdge(object):
@@ -84,8 +86,8 @@ class VisuGraph(object):
         # graph.node(name='%input0', label='%input0', color='white', style='filled')
         # base_node = "graph.node(name='{}', label='{}', color='{}', style='{}')\n"
         for k, v in self.nodes.items():
-            self.node_code += "graph.node(name='{}', label='{}', color='{}', style='{}')\n".format(k, v.label, v.color,
-                                                                                                   v.style)
+            self.node_code += "graph.node(name='{}', label='{}', color='{}', style='{}', " \
+                              "fixedsize='{}', height='{}')\n".format(k, v.label, v.color, v.style, v.fixedsize, v.height)
 
     def init_edge(self):
         # graph.edge(tail_name='%input0', head_name='%0', label='')
@@ -160,7 +162,10 @@ class VisuGraph(object):
                     self.nodes[n] = IRNode(name=n, label=n, color='white')
 
         # 在图的末尾添加一个空节点
-        self.nodes[''] = IRNode(name='', label='', color='white')
+        # TODO Multi-output bug
+        # a short term fix
+        if self.nodes.get('}', ''):
+            self.nodes[''] = IRNode(name='', label='', color='white', fixedsize='true')
 
     def parse_edge(self):
         for k, v in self.nodes.items():
@@ -179,7 +184,7 @@ class VisuGraph(object):
         if info:
             info = info['shape']
         is_end = self.nodes.get('}', '')
-        if is_end and info:
+        if is_end:
             self.edges.append(IREdge(tail_name='}', head_name='', shape=info))
 
     def get_tensor_info(self, txt_file=''):
@@ -346,7 +351,8 @@ class VisuGraphFuseOps(VisuGraph):
                             self.nodes[n] = IRNode(name=n, label=n, color='white')
 
         # 在图的末尾添加一个空节点
-        self.nodes[''] = IRNode(name='', label='', color='white')
+        if self.nodes.get('}', ''):
+            self.nodes[''] = IRNode(name='', label='', color='white', fixedsize='true')
 
     def split_fn_op(self):
         pattern1 = re.compile(r'(%\d+).+{(.+)}')
@@ -429,7 +435,8 @@ class VisuGraphRUF(VisuGraph):
                     self.nodes[n] = IRNode(name=n, label=n, color='white')
 
         # 在图的末尾添加一个空节点
-        self.nodes[''] = IRNode(name='', label='', color='white')
+        if self.nodes.get('}', ''):
+            self.nodes[''] = IRNode(name='', label='', color='white', fixedsize='true')
 
 
 class VisuGraphMC(VisuGraphFuseOps):
