@@ -111,9 +111,10 @@ class VisuGraph(object):
         graph = Digraph(name='RelayIR')
         exec(self.node_code)
         exec(self.edge_code)
-        # dot: failure to create cairo surface: out of memory ==> svg
+        # dot: failure to create cairo surface: out of memory ==> png --> svg
         # Recommend: The large model uses the svg format as the output
-        graph.render(filename=self.save_name, format='png', cleanup=True)
+        # It is strongly recommended to use the svg format because it is fast to generate
+        graph.render(filename=self.save_name, format='svg', cleanup=True)
 
     def get_node_args(self, output_node, body_node):
         pattern1 = re.compile(r'(%[a-zA-Z]*([\d._a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
@@ -194,7 +195,7 @@ class VisuGraph(object):
         with open(txt_file, 'r') as f:
             lines = f.readlines()
 
-        pattern1 = re.compile(r'(%[a-z\d_.]*):.+?\[(.+?)]')
+        pattern1 = re.compile(r'(%[a-z\d_.]*)[:\s].+?\[(.+?)]')
         pattern2 = re.compile(r'->.+?\[(.+?)]')
         pattern3 = re.compile(r'\)\s.+?\[(.+?)]')
         pattern4 = re.compile(r'(meta\[relay\.Constant]\[\d*]).+?\[(.+?)]')
