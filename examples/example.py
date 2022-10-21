@@ -4,7 +4,7 @@
 # Datetime: 2022/9/19 17:10
 # Filename: example.py
 """
-可用于 FuseOps 可视化
+可用于 FuseOps、CombineParallelxxx 可视化
 """
 import torch
 from torch import nn
@@ -36,14 +36,32 @@ class ExampleModel(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=16, kernel_size=1, stride=1, bias=False)
         self.conv3 = nn.Conv2d(in_channels=16, out_channels=16, kernel_size=1, stride=1, bias=False)
 
+        self.conv = nn.Conv2d(in_channels=16, out_channels=16, kernel_size=3, stride=1, bias=False)
+        self.linear = nn.Linear(in_features=100, out_features=100, bias=False)
+        self.weight = torch.randn(size=(10, 100, 50))
+
     def forward(self, x):
-        x = x + 0.1
-        x = self.conv1(x)
-        x0 = x + 0.1
-        x = x + x0
-        x1 = self.conv2(x)
-        x2 = self.conv3(x)
-        out = x1 + x2
+        # x = x + 0.1
+        # x = self.conv1(x)
+        # x0 = x + 0.1
+        # x = x + x0
+        # x1 = self.conv2(x)
+        # x2 = self.conv3(x)
+        # out = x1 + x2
+
+        x1 = self.conv(x)
+        x2 = self.conv(x)
+        x3 = self.conv(x)
+
+        # x1 = self.linear(x)
+        # x2 = self.linear(x)
+        # x3 = self.linear(x)
+
+        # x1 = torch.matmul(x, self.weight)
+        # x2 = torch.matmul(x, self.weight)
+        # x3 = torch.matmul(x, self.weight)
+
+        out = x1 + x2 + x3
 
         return out
 

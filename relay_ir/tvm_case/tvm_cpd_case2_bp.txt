@@ -1,0 +1,11 @@
+fn (%x: Tensor[(100, 300), float32], %w1: Tensor[(200, 300), float32], %w2: Tensor[(200, 300), float32], %b1: Tensor[(200), float32], %b2: Tensor[(200), float32], %scale1: Tensor[(1), float32], %scale2: Tensor[(1), float32]) {
+  %0 = nn.dense(%x, %w1, units=None);
+  %1 = add(%0, %b1);
+  %2 = multiply(%1, %scale1);
+  %3 = nn.dense(%x, %w2, units=None);
+  %4 = add(%3, %b2);
+  %5 = multiply(%4, %scale2);
+  %6 = reshape(%2, newshape=[1, 1, 20000]);
+  %7 = reshape(%5, newshape=[1, 1, 20000]);
+  (%6, %7)
+}

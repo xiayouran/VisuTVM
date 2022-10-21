@@ -1,0 +1,7 @@
+fn (%x: Tensor[(1, 16, 64, 64), float32]) {
+  %0 = nn.max_pool2d(%x, pool_size=[2, 2], strides=[2, 2], padding=[0, 0, 0, 0]);
+  %1 = nn.upsampling(%0, scale_h=2f, scale_w=2f);
+  %2 = (%1, %x);
+  %3 = concatenate(%2, axis=1);
+  add(%3, 1f)
+}

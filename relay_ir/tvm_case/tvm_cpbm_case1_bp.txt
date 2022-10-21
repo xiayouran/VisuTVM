@@ -1,0 +1,6 @@
+fn (%x: Tensor[(1, 100, 300), float32], %w1: Tensor[(1, 200, 300), float32], %w2: Tensor[(1, 200, 300), float32], %w3: Tensor[(1, 200, 300), float32]) {
+  %0 = nn.batch_matmul(%x, %w1, transpose_b=True);
+  %1 = nn.batch_matmul(%x, %w2, transpose_b=True);
+  %2 = nn.batch_matmul(%x, %w3, transpose_b=True);
+  (%0, %1, %2)
+}

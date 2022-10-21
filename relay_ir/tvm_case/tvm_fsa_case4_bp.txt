@@ -1,0 +1,6 @@
+fn (%x: Tensor[(3, 5), float32], %weight: Tensor[(4, 5), float32], %in_bias: Tensor[(5), float32]) {
+  %0 = multiply(%x, meta[relay.Constant][0]);
+  %1 = nn.relu(%0);
+  %2 = add(%1, %in_bias);
+  nn.dense(%2, %weight, units=None)
+}

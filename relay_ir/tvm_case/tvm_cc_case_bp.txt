@@ -1,0 +1,7 @@
+fn (%data: Tensor[(1, 16, 7, 7), int8], %weight, %bias1: Tensor[(16, 1, 1), int32], %bias2: Tensor[(16, 1, 1), int32]) {
+  %0 = nn.conv2d(%data, %weight, padding=[1, 1, 1, 1], channels=16, kernel_size=[3, 3], out_dtype="int8");
+  %1 = cast(%0, dtype="int32");
+  %2 = add(%1, %bias1);
+  %3 = add(%1, %bias2);
+  add(%2, %3)
+}

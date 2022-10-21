@@ -1,0 +1,14 @@
+fn (%x: Tensor[(10, 10, 10, 10), float32] /* ty=Tensor[(10, 10, 10, 10), float32] */, %beta: Tensor[(10), float32] /* ty=Tensor[(10), float32] */, %gamma: Tensor[(10), float32] /* ty=Tensor[(10), float32] */, %moving_var: Tensor[(10), float32] /* ty=Tensor[(10), float32] */, %moving_mean: Tensor[(10), float32] /* ty=Tensor[(10), float32] */) -> Tensor[(10, 10, 10, 10), float32] {
+  %0 = add(%moving_var, 0.01f /* ty=float32 */) /* ty=Tensor[(10), float32] */;
+  %1 = sqrt(%0) /* ty=Tensor[(10), float32] */;
+  %2 = divide(1f /* ty=float32 */, %1) /* ty=Tensor[(10), float32] */;
+  %3 = multiply(%2, %gamma) /* ty=Tensor[(10), float32] */;
+  %4 = add(%x, 1f /* ty=float32 */) /* ty=Tensor[(10, 10, 10, 10), float32] */;
+  %5 = expand_dims(%3, axis=1, num_newaxis=2) /* ty=Tensor[(10, 1, 1), float32] */;
+  %6 = negative(%moving_mean) /* ty=Tensor[(10), float32] */;
+  %7 = multiply(%6, %3) /* ty=Tensor[(10), float32] */;
+  %8 = add(%7, %beta) /* ty=Tensor[(10), float32] */;
+  %9 = multiply(%4, %5) /* ty=Tensor[(10, 10, 10, 10), float32] */;
+  %10 = expand_dims(%8, axis=1, num_newaxis=2) /* ty=Tensor[(10, 1, 1), float32] */;
+  add(%9, %10) /* ty=Tensor[(10, 10, 10, 10), float32] */
+} /* ty=fn (Tensor[(10, 10, 10, 10), float32], Tensor[(10), float32], Tensor[(10), float32], Tensor[(10), float32], Tensor[(10), float32]) -> Tensor[(10, 10, 10, 10), float32] */

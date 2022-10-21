@@ -1,0 +1,7 @@
+fn (%x: Tensor[(1, 4, 16, 16), float32], %w1: Tensor[(4, 4, 1, 1), float32], %w2: Tensor[(8, 4, 1, 1), float32], %scale1: Tensor[(1), float32], %scale2: Tensor[(1), float32]) {
+  %0 = nn.conv2d(%x, %w1, padding=[0, 0, 0, 0]);
+  %1 = nn.conv2d(%x, %w2, padding=[0, 0, 0, 0]);
+  %2 = multiply(%0, %scale1);
+  %3 = multiply(%1, %scale2);
+  (%2, %3)
+}

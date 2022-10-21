@@ -1,0 +1,13 @@
+fn (%x: Tensor[(1, 4, 16, 16), float32] /* ty=Tensor[(1, 4, 16, 16), float32] */, %w1: Tensor[(4, 4, 1, 1), float32] /* ty=Tensor[(4, 4, 1, 1), float32] */, %w2: Tensor[(8, 4, 1, 1), float32] /* ty=Tensor[(8, 4, 1, 1), float32] */, %scale1: Tensor[(4, 1, 1), float32] /* ty=Tensor[(4, 1, 1), float32] */, %scale2: Tensor[(8, 1, 1), float32] /* ty=Tensor[(8, 1, 1), float32] */, %bias: Tensor[(8, 1, 1), float32] /* ty=Tensor[(8, 1, 1), float32] */) -> (Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32]) {
+  %0 = (%w1, %w2) /* ty=(Tensor[(4, 4, 1, 1), float32], Tensor[(8, 4, 1, 1), float32]) */;
+  %1 = concatenate(%0) /* ty=Tensor[(12, 4, 1, 1), float32] */;
+  %2 = (%scale1, %scale2) /* ty=(Tensor[(4, 1, 1), float32], Tensor[(8, 1, 1), float32]) */;
+  %3 = nn.conv2d(%x, %1, padding=[0, 0, 0, 0], channels=12) /* ty=Tensor[(1, 12, 16, 16), float32] */;
+  %4 = concatenate(%2) /* ty=Tensor[(12, 1, 1), float32] */;
+  %5 = multiply(%3, %4) /* ty=Tensor[(1, 12, 16, 16), float32] */;
+  %6 = nn.relu(%5) /* ty=Tensor[(1, 12, 16, 16), float32] */;
+  %7 = strided_slice(%6, begin=[0, 4], end=[-1, 8], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 8, 16, 16), float32] */;
+  %8 = strided_slice(%6, begin=[0, 0], end=[-1, 4], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 4, 16, 16), float32] */;
+  %9 = add(%7, %bias) /* ty=Tensor[(1, 8, 16, 16), float32] */;
+  (%8, %9) /* ty=(Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32]) */
+} /* ty=fn (Tensor[(1, 4, 16, 16), float32], Tensor[(4, 4, 1, 1), float32], Tensor[(8, 4, 1, 1), float32], Tensor[(4, 1, 1), float32], Tensor[(8, 1, 1), float32], Tensor[(8, 1, 1), float32]) -> (Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32]) */

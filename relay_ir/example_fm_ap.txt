@@ -1,0 +1,14 @@
+fn (%input0: Tensor[(1, 10), float32] /* ty=Tensor[(1, 10), float32] */, %input1: Tensor[(1, 10), float32] /* ty=Tensor[(1, 10), float32] */) -> Tensor[(1, 10), float32] {
+  %0 = power(%input0, 2f /* ty=float32 */) /* ty=Tensor[(1, 10), float32] */;
+  %1 = sin(%input1) /* ty=Tensor[(1, 10), float32] */;
+  %2 = power(%1, 2f /* ty=float32 */) /* ty=Tensor[(1, 10), float32] */;
+  %3 = cos(%input1) /* ty=Tensor[(1, 10), float32] */;
+  %4 = power(%3, 2f /* ty=float32 */) /* ty=Tensor[(1, 10), float32] */;
+  %5 = multiply(%input0, %2) /* ty=Tensor[(1, 10), float32] */;
+  %6 = multiply(%input0, %4) /* ty=Tensor[(1, 10), float32] */;
+  %7 = add(%input0, %0) /* ty=Tensor[(1, 10), float32] */;
+  %8 = add(%5, %6) /* ty=Tensor[(1, 10), float32] */;
+  %9 = divide(%7, %8) /* ty=Tensor[(1, 10), float32] */;
+  %10 = fast_tanh(%9) /* ty=Tensor[(1, 10), float32] */;
+  nn.fast_softmax(%10, axis=0) /* ty=Tensor[(1, 10), float32] */
+} /* ty=fn (Tensor[(1, 10), float32], Tensor[(1, 10), float32]) -> Tensor[(1, 10), float32] */

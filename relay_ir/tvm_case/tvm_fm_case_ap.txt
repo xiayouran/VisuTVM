@@ -1,0 +1,6 @@
+fn (%x: Tensor[(1, 16, 16, 16), float32] /* ty=Tensor[(1, 16, 16, 16), float32] */) -> Tensor[(1, 16, 16, 16), float32] {
+  %0 = fast_exp(%x) /* ty=Tensor[(1, 16, 16, 16), float32] */;
+  %1 = fast_tanh(%0) /* ty=Tensor[(1, 16, 16, 16), float32] */;
+  %2 = fast_erf(%1) /* ty=Tensor[(1, 16, 16, 16), float32] */;
+  nn.fast_softmax(%2) /* ty=Tensor[(1, 16, 16, 16), float32] */
+} /* ty=fn (Tensor[(1, 16, 16, 16), float32]) -> Tensor[(1, 16, 16, 16), float32] */

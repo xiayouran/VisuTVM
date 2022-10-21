@@ -1,0 +1,13 @@
+fn (%x: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */) -> Tensor[(1, 32, 64, 64), float32] {
+  %3 = fn (%p01: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, Primitive=1) -> Tensor[(1, 16, 32, 32), float32] {
+    nn.max_pool2d(%p01, pool_size=[2, 2], strides=[2, 2], padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 16, 32, 32), float32] */
+  } /* ty=fn (Tensor[(1, 16, 64, 64), float32]) -> Tensor[(1, 16, 32, 32), float32] */;
+  %4 = %3(%x) /* ty=Tensor[(1, 16, 32, 32), float32] */;
+  %5 = fn (%p0: Tensor[(1, 16, 32, 32), float32] /* ty=Tensor[(1, 16, 32, 32), float32] */, %p1: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, Primitive=1) -> Tensor[(1, 32, 64, 64), float32] {
+    %0 = nn.upsampling(%p0, scale_h=2f, scale_w=2f) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+    %1 = (%0, %p1) /* ty=(Tensor[(1, 16, 64, 64), float32], Tensor[(1, 16, 64, 64), float32]) */;
+    %2 = concatenate(%1, axis=1) /* ty=Tensor[(1, 32, 64, 64), float32] */;
+    add(%2, 1f /* ty=float32 */) /* ty=Tensor[(1, 32, 64, 64), float32] */
+  } /* ty=fn (Tensor[(1, 16, 32, 32), float32], Tensor[(1, 16, 64, 64), float32]) -> Tensor[(1, 32, 64, 64), float32] */;
+  %5(%4, %x) /* ty=Tensor[(1, 32, 64, 64), float32] */
+} /* ty=fn (Tensor[(1, 16, 64, 64), float32]) -> Tensor[(1, 32, 64, 64), float32] */

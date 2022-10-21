@@ -1,0 +1,4 @@
+fn (%x: Tensor[(1, 56, 56, 64), float32], %weight: Tensor[(3, 3, 64, 64), float32]) {
+  %0 = nn.conv2d(%x, %weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3], data_layout="NHWC", kernel_layout="HWIO");
+  nn.relu(%0)
+}

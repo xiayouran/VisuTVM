@@ -1,0 +1,14 @@
+fn (%data: Tensor[(1, 512, 28, 28), float32] /* ty=Tensor[(1, 512, 28, 28), float32] */, %kernel: Tensor[(256, 512, 1, 1), float32] /* ty=Tensor[(256, 512, 1, 1), float32] */, %bias: Tensor[(256), float32] /* ty=Tensor[(256), float32] */, %a: Tensor[(1, 256, 28, 28), float32] /* ty=Tensor[(1, 256, 28, 28), float32] */, %b: Tensor[(1, 256, 28, 28), float32] /* ty=Tensor[(1, 256, 28, 28), float32] */) -> Tensor[(1, 256, 28, 28), float32] {
+  %3 = fn (%FunctionVar_0_01: Tensor[(1, 512, 28, 28), float32] /* ty=Tensor[(1, 512, 28, 28), float32] */, %FunctionVar_0_11: Tensor[(256, 512, 1, 1), float32] /* ty=Tensor[(256, 512, 1, 1), float32] */, %FunctionVar_0_2: Tensor[(256), float32] /* ty=Tensor[(256), float32] */, PartitionedFromPattern="nn.conv2d_nn.bias_add_nn.relu_", Composite="conv2d_bias_relu") -> Tensor[(1, 256, 28, 28), float32] {
+    %1 = nn.conv2d(%FunctionVar_0_01, %FunctionVar_0_11, padding=[0, 0, 0, 0], kernel_size=[1, 1]) /* ty=Tensor[(1, 256, 28, 28), float32] */;
+    %2 = nn.bias_add(%1, %FunctionVar_0_2) /* ty=Tensor[(1, 256, 28, 28), float32] */;
+    nn.relu(%2) /* ty=Tensor[(1, 256, 28, 28), float32] */
+  } /* ty=fn (Tensor[(1, 512, 28, 28), float32], Tensor[(256, 512, 1, 1), float32], Tensor[(256), float32]) -> Tensor[(1, 256, 28, 28), float32] */;
+  %4 = %3(%data, %kernel, %bias) /* ty=Tensor[(1, 256, 28, 28), float32] */;
+  %5 = fn (%FunctionVar_0_0: Tensor[(1, 256, 28, 28), float32] /* ty=Tensor[(1, 256, 28, 28), float32] */, %FunctionVar_0_1: Tensor[(1, 256, 28, 28), float32] /* ty=Tensor[(1, 256, 28, 28), float32] */, PartitionedFromPattern="add_nn.relu_", Composite="add_relu") -> Tensor[(1, 256, 28, 28), float32] {
+    %0 = add(%FunctionVar_0_0, %FunctionVar_0_1) /* ty=Tensor[(1, 256, 28, 28), float32] */;
+    nn.relu(%0) /* ty=Tensor[(1, 256, 28, 28), float32] */
+  } /* ty=fn (Tensor[(1, 256, 28, 28), float32], Tensor[(1, 256, 28, 28), float32]) -> Tensor[(1, 256, 28, 28), float32] */;
+  %6 = %5(%4, %a) /* ty=Tensor[(1, 256, 28, 28), float32] */;
+  multiply(%6, %b) /* ty=Tensor[(1, 256, 28, 28), float32] */
+} /* ty=fn (Tensor[(1, 512, 28, 28), float32], Tensor[(256, 512, 1, 1), float32], Tensor[(256), float32], Tensor[(1, 256, 28, 28), float32], Tensor[(1, 256, 28, 28), float32]) -> Tensor[(1, 256, 28, 28), float32] */

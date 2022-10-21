@@ -1,0 +1,6 @@
+fn (%x: Tensor[(2, 4, 10, 10), float32] /* ty=Tensor[(2, 4, 10, 10), float32] */, %weight: Tensor[(8, 4, 3, 3), float32] /* ty=Tensor[(8, 4, 3, 3), float32] */) -> Tensor[(2, 8, 10, 10), float32] {
+  %0 = squeeze(meta[relay.Constant][0] /* ty=Tensor[(8, 1, 1), float32] */, axis=[1, 2]) /* ty=Tensor[(8), float32] */;
+  %1 = expand_dims(%0, axis=1, num_newaxis=3) /* ty=Tensor[(8, 1, 1, 1), float32] */;
+  %2 = multiply(%weight, %1) /* ty=Tensor[(8, 4, 3, 3), float32] */;
+  nn.conv2d(%x, %2, padding=[1, 1, 1, 1], channels=8, kernel_size=[3, 3]) /* ty=Tensor[(2, 8, 10, 10), float32] */
+} /* ty=fn (Tensor[(2, 4, 10, 10), float32], Tensor[(8, 4, 3, 3), float32]) -> Tensor[(2, 8, 10, 10), float32] */

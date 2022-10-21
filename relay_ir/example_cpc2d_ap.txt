@@ -1,0 +1,10 @@
+fn (%input0: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %conv1.weight: Tensor[(16, 16, 3, 3), float32] /* ty=Tensor[(16, 16, 3, 3), float32] */) -> Tensor[(1, 16, 62, 62), float32] {
+  %0 = (%conv1.weight, %conv1.weight, %conv1.weight) /* ty=(Tensor[(16, 16, 3, 3), float32], Tensor[(16, 16, 3, 3), float32], Tensor[(16, 16, 3, 3), float32]) */;
+  %1 = concatenate(%0) /* ty=Tensor[(48, 16, 3, 3), float32] */;
+  %2 = nn.conv2d(%input0, %1, padding=[0, 0, 0, 0], channels=48, kernel_size=[3, 3]) /* ty=Tensor[(1, 48, 62, 62), float32] */;
+  %3 = strided_slice(%2, begin=[0, 0], end=[-1, 16], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 16, 62, 62), float32] */;
+  %4 = strided_slice(%2, begin=[0, 16], end=[-1, 16], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 16, 62, 62), float32] */;
+  %5 = add(%3, %4) /* ty=Tensor[(1, 16, 62, 62), float32] */;
+  %6 = strided_slice(%2, begin=[0, 32], end=[-1, 16], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 16, 62, 62), float32] */;
+  add(%5, %6) /* ty=Tensor[(1, 16, 62, 62), float32] */
+} /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 3, 3), float32]) -> Tensor[(1, 16, 62, 62), float32] */

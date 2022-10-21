@@ -1,0 +1,6 @@
+fn (%x: Tensor[(1, 16, 16, 16), float32]) {
+  %0 = exp(%x);
+  %1 = tanh(%0);
+  %2 = erf(%1);
+  nn.softmax(%2)
+}

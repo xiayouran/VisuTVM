@@ -1,0 +1,13 @@
+fn (%input0: Tensor[(10, 50, 100), float32] /* ty=Tensor[(10, 50, 100), float32] */) -> Tensor[(10, 50, 50), float32] {
+  %0 = transpose(meta[relay.Constant][0] /* ty=Tensor[(10, 100, 50), float32] */, axes=[0, 2, 1]) /* ty=Tensor[(10, 50, 100), float32] */;
+  %1 = transpose(meta[relay.Constant][0] /* ty=Tensor[(10, 100, 50), float32] */, axes=[0, 2, 1]) /* ty=Tensor[(10, 50, 100), float32] */;
+  %2 = transpose(meta[relay.Constant][0] /* ty=Tensor[(10, 100, 50), float32] */, axes=[0, 2, 1]) /* ty=Tensor[(10, 50, 100), float32] */;
+  %3 = (%0, %1, %2) /* ty=(Tensor[(10, 50, 100), float32], Tensor[(10, 50, 100), float32], Tensor[(10, 50, 100), float32]) */;
+  %4 = concatenate(%3, axis=1) /* ty=Tensor[(10, 150, 100), float32] */;
+  %5 = nn.batch_matmul(%input0, %4, transpose_b=True) /* ty=Tensor[(10, 50, 150), float32] */;
+  %6 = strided_slice(%5, begin=[0, 0, 0], end=[-1, -1, 50], strides=[1, 1, 1], slice_mode="size", axes=None) /* ty=Tensor[(10, 50, 50), float32] */;
+  %7 = strided_slice(%5, begin=[0, 0, 50], end=[-1, -1, 50], strides=[1, 1, 1], slice_mode="size", axes=None) /* ty=Tensor[(10, 50, 50), float32] */;
+  %8 = add(%6, %7) /* ty=Tensor[(10, 50, 50), float32] */;
+  %9 = strided_slice(%5, begin=[0, 0, 100], end=[-1, -1, 50], strides=[1, 1, 1], slice_mode="size", axes=None) /* ty=Tensor[(10, 50, 50), float32] */;
+  add(%8, %9) /* ty=Tensor[(10, 50, 50), float32] */
+} /* ty=fn (Tensor[(10, 50, 100), float32]) -> Tensor[(10, 50, 50), float32] */

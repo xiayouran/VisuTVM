@@ -1,0 +1,4 @@
+fn (%x: Tensor[(1, 2, 3), float32] /* ty=Tensor[(1, 2, 3), float32] */) -> Tensor[(1, 2, 3), float32] {
+  %0 = add(%x, meta[relay.Constant][0] /* ty=Tensor[(3), float32] */) /* ty=Tensor[(1, 2, 3), float32] */;
+  add(%0, meta[relay.Constant][1] /* ty=Tensor[(3), float32] */) /* ty=Tensor[(1, 2, 3), float32] */
+} /* ty=fn (Tensor[(1, 2, 3), float32]) -> Tensor[(1, 2, 3), float32] */

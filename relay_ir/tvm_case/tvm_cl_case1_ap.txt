@@ -1,0 +1,7 @@
+fn (%x: Tensor[(1, 56, 56, 64), float32] /* ty=Tensor[(1, 56, 56, 64), float32] */, %weight: Tensor[(3, 3, 64, 64), float32] /* ty=Tensor[(3, 3, 64, 64), float32] */) -> Tensor[(1, 56, 56, 64), float32] {
+  %0 = layout_transform(%x, src_layout="NHWC", dst_layout="NCHW") /* ty=Tensor[(1, 64, 56, 56), float32] */;
+  %1 = layout_transform(%weight, src_layout="HWIO", dst_layout="OIHW") /* ty=Tensor[(64, 64, 3, 3), float32] */;
+  %2 = nn.conv2d(%0, %1, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+  %3 = nn.relu(%2) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+  layout_transform(%3, src_layout="NCHW", dst_layout="NHWC") /* ty=Tensor[(1, 56, 56, 64), float32] */
+} /* ty=fn (Tensor[(1, 56, 56, 64), float32], Tensor[(3, 3, 64, 64), float32]) -> Tensor[(1, 56, 56, 64), float32] */

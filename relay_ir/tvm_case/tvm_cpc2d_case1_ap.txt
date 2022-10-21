@@ -1,0 +1,11 @@
+fn (%x: Tensor[(1, 4, 16, 16), float32] /* ty=Tensor[(1, 4, 16, 16), float32] */, %w1: Tensor[(4, 4, 1, 1), float32] /* ty=Tensor[(4, 4, 1, 1), float32] */, %w2: Tensor[(8, 4, 1, 1), float32] /* ty=Tensor[(8, 4, 1, 1), float32] */, %w3: Tensor[(4, 4, 3, 3), float32] /* ty=Tensor[(4, 4, 3, 3), float32] */, %w4: Tensor[(7, 4, 1, 1), float32] /* ty=Tensor[(7, 4, 1, 1), float32] */) -> (Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32], Tensor[(1, 4, 14, 14), float32], Tensor[(1, 7, 16, 16), float32], Tensor[(1, 4, 16, 16), float32]) {
+  %0 = (%w1, %w2, %w4) /* ty=(Tensor[(4, 4, 1, 1), float32], Tensor[(8, 4, 1, 1), float32], Tensor[(7, 4, 1, 1), float32]) */;
+  %1 = concatenate(%0) /* ty=Tensor[(19, 4, 1, 1), float32] */;
+  %2 = nn.conv2d(%x, %1, padding=[0, 0, 0, 0], channels=19) /* ty=Tensor[(1, 19, 16, 16), float32] */;
+  %3 = strided_slice(%2, begin=[0, 0], end=[-1, 4], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 4, 16, 16), float32] */;
+  %4 = strided_slice(%2, begin=[0, 4], end=[-1, 8], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 8, 16, 16), float32] */;
+  %5 = nn.conv2d(%x, %w3, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 4, 14, 14), float32] */;
+  %6 = strided_slice(%2, begin=[0, 12], end=[-1, 7], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(1, 7, 16, 16), float32] */;
+  %7 = nn.max_pool2d(%x, pool_size=[1, 1], padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 4, 16, 16), float32] */;
+  (%3, %4, %5, %6, %7) /* ty=(Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32], Tensor[(1, 4, 14, 14), float32], Tensor[(1, 7, 16, 16), float32], Tensor[(1, 4, 16, 16), float32]) */
+} /* ty=fn (Tensor[(1, 4, 16, 16), float32], Tensor[(4, 4, 1, 1), float32], Tensor[(8, 4, 1, 1), float32], Tensor[(4, 4, 3, 3), float32], Tensor[(7, 4, 1, 1), float32]) -> (Tensor[(1, 4, 16, 16), float32], Tensor[(1, 8, 16, 16), float32], Tensor[(1, 4, 14, 14), float32], Tensor[(1, 7, 16, 16), float32], Tensor[(1, 4, 16, 16), float32]) */

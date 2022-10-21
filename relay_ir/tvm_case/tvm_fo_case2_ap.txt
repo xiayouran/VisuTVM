@@ -1,0 +1,21 @@
+fn (%x: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %w1: Tensor[(16, 16, 3, 3), float32] /* ty=Tensor[(16, 16, 3, 3), float32] */, %w2: Tensor[(16, 16, 1, 1), float32] /* ty=Tensor[(16, 16, 1, 1), float32] */, %w3: Tensor[(16, 16, 3, 3), float32] /* ty=Tensor[(16, 16, 3, 3), float32] */) -> Tensor[(1, 16, 64, 64), float32] {
+  %3 = fn (%p02: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, Primitive=1) -> Tensor[(1, 16, 64, 64), float32] {
+    add(%p02, 1f /* ty=float32 */) /* ty=Tensor[(1, 16, 64, 64), float32] */
+  } /* ty=fn (Tensor[(1, 16, 64, 64), float32]) -> Tensor[(1, 16, 64, 64), float32] */;
+  %4 = %3(%x) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %5 = fn (%p01: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %p11: Tensor[(16, 16, 3, 3), float32] /* ty=Tensor[(16, 16, 3, 3), float32] */, Primitive=1) -> Tensor[(1, 16, 64, 64), float32] {
+    %1 = nn.conv2d(%p01, %p11, padding=[1, 1, 1, 1], channels=16, kernel_size=[3, 3]) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+    %2 = add(1f /* ty=float32 */, %1) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+    add(%1, %2) /* ty=Tensor[(1, 16, 64, 64), float32] */
+  } /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 3, 3), float32]) -> Tensor[(1, 16, 64, 64), float32] */;
+  %6 = %5(%4, %w1) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %7 = fn (%p03: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %p12: Tensor[(16, 16, 3, 3), float32] /* ty=Tensor[(16, 16, 3, 3), float32] */, Primitive=1) -> Tensor[(1, 16, 64, 64), float32] {
+    nn.conv2d(%p03, %p12, padding=[1, 1, 1, 1], channels=16, kernel_size=[3, 3]) /* ty=Tensor[(1, 16, 64, 64), float32] */
+  } /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 3, 3), float32]) -> Tensor[(1, 16, 64, 64), float32] */;
+  %8 = %7(%6, %w3) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+  %9 = fn (%p0: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, %p1: Tensor[(16, 16, 1, 1), float32] /* ty=Tensor[(16, 16, 1, 1), float32] */, %p2: Tensor[(1, 16, 64, 64), float32] /* ty=Tensor[(1, 16, 64, 64), float32] */, Primitive=1) -> Tensor[(1, 16, 64, 64), float32] {
+    %0 = nn.conv2d(%p0, %p1, padding=[0, 0, 0, 0], channels=16, kernel_size=[1, 1]) /* ty=Tensor[(1, 16, 64, 64), float32] */;
+    add(%0, %p2) /* ty=Tensor[(1, 16, 64, 64), float32] */
+  } /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 1, 1), float32], Tensor[(1, 16, 64, 64), float32]) -> Tensor[(1, 16, 64, 64), float32] */;
+  %9(%6, %w2, %8) /* ty=Tensor[(1, 16, 64, 64), float32] */
+} /* ty=fn (Tensor[(1, 16, 64, 64), float32], Tensor[(16, 16, 3, 3), float32], Tensor[(16, 16, 1, 1), float32], Tensor[(16, 16, 3, 3), float32]) -> Tensor[(1, 16, 64, 64), float32] */

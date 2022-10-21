@@ -1,0 +1,10 @@
+fn (%input0: Tensor[(10, 50, 100), float32]) {
+  %0 = transpose(meta[relay.Constant][0], axes=[0, 2, 1]);
+  %1 = transpose(meta[relay.Constant][0], axes=[0, 2, 1]);
+  %2 = nn.batch_matmul(%input0, %0, transpose_b=True);
+  %3 = nn.batch_matmul(%input0, %1, transpose_b=True);
+  %4 = transpose(meta[relay.Constant][0], axes=[0, 2, 1]);
+  %5 = add(%2, %3);
+  %6 = nn.batch_matmul(%input0, %4, transpose_b=True);
+  add(%5, %6)
+}

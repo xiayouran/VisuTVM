@@ -1,0 +1,16 @@
+fn (%x: Tensor[(100, 300), float32] /* ty=Tensor[(100, 300), float32] */, %w1: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */, %w2: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */, %w3: Tensor[(201, 300), float32] /* ty=Tensor[(201, 300), float32] */, %w4: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */) -> (Tensor[(100, 200), float32], Tensor[(100, 200), float32], Tensor[(100, 201), float32], Tensor[(100, 200), float32]) {
+  %0 = (%x, %x, %x) /* ty=(Tensor[(100, 300), float32], Tensor[(100, 300), float32], Tensor[(100, 300), float32]) */;
+  %1 = (%w1, %w2, %w4) /* ty=(Tensor[(200, 300), float32], Tensor[(200, 300), float32], Tensor[(200, 300), float32]) */;
+  %2 = stack(%0) /* ty=Tensor[(3, 100, 300), float32] */;
+  %3 = stack(%1) /* ty=Tensor[(3, 200, 300), float32] */;
+  %4 = nn.batch_matmul(%2, %3, transpose_b=True) /* ty=Tensor[(3, 100, 200), float32] */;
+  %5 = split(%4, indices_or_sections=3) /* ty=(Tensor[(1, 100, 200), float32], Tensor[(1, 100, 200), float32], Tensor[(1, 100, 200), float32]) */;
+  %6 = %5.0 /* ty=Tensor[(1, 100, 200), float32] */;
+  %7 = %5.1 /* ty=Tensor[(1, 100, 200), float32] */;
+  %8 = %5.2 /* ty=Tensor[(1, 100, 200), float32] */;
+  %9 = squeeze(%6, axis=[0]) /* ty=Tensor[(100, 200), float32] */;
+  %10 = squeeze(%7, axis=[0]) /* ty=Tensor[(100, 200), float32] */;
+  %11 = nn.dense(%x, %w3, units=None) /* ty=Tensor[(100, 201), float32] */;
+  %12 = squeeze(%8, axis=[0]) /* ty=Tensor[(100, 200), float32] */;
+  (%9, %10, %11, %12) /* ty=(Tensor[(100, 200), float32], Tensor[(100, 200), float32], Tensor[(100, 201), float32], Tensor[(100, 200), float32]) */
+} /* ty=fn (Tensor[(100, 300), float32], Tensor[(200, 300), float32], Tensor[(200, 300), float32], Tensor[(201, 300), float32], Tensor[(200, 300), float32]) -> (Tensor[(100, 200), float32], Tensor[(100, 200), float32], Tensor[(100, 201), float32], Tensor[(100, 200), float32]) */

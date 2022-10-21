@@ -1,0 +1,8 @@
+fn (%x: Tensor[(3, 5), float32] /* ty=Tensor[(3, 5), float32] */, %weight: Tensor[(4, 5), float32] /* ty=Tensor[(4, 5), float32] */, %in_bias: Tensor[(4), float32] /* ty=Tensor[(4), float32] */) -> Tensor[(3, 4), float32] {
+  %0 = expand_dims(meta[relay.Constant][0] /* ty=Tensor[(4), float32] */, axis=1) /* ty=Tensor[(4, 1), float32] */;
+  %1 = multiply(%weight, %0) /* ty=Tensor[(4, 5), float32] */;
+  %2 = nn.dense(%x, %1, units=None) /* ty=Tensor[(3, 4), float32] */;
+  %3 = multiply(%in_bias, meta[relay.Constant][0] /* ty=Tensor[(4), float32] */) /* ty=Tensor[(4), float32] */;
+  %4 = add(%2, %3) /* ty=Tensor[(3, 4), float32] */;
+  nn.relu(%4) /* ty=Tensor[(3, 4), float32] */
+} /* ty=fn (Tensor[(3, 5), float32], Tensor[(4, 5), float32], Tensor[(4), float32]) -> Tensor[(3, 4), float32] */

@@ -1,0 +1,25 @@
+fn (%x: Tensor[(100, 300), float32] /* ty=Tensor[(100, 300), float32] */, %w1: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */, %w2: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */, %b1: Tensor[(200), float32] /* ty=Tensor[(200), float32] */, %b2: Tensor[(200), float32] /* ty=Tensor[(200), float32] */, %scale1: Tensor[(1), float32] /* ty=Tensor[(1), float32] */, %scale2: Tensor[(1), float32] /* ty=Tensor[(1), float32] */) -> (Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 20000), float32]) {
+  %0 = (%x, %x) /* ty=(Tensor[(100, 300), float32], Tensor[(100, 300), float32]) */;
+  %1 = (%w1, %w2) /* ty=(Tensor[(200, 300), float32], Tensor[(200, 300), float32]) */;
+  %2 = stack(%0) /* ty=Tensor[(2, 100, 300), float32] */;
+  %3 = stack(%1) /* ty=Tensor[(2, 200, 300), float32] */;
+  %4 = expand_dims(%b1, axis=0) /* ty=Tensor[(1, 200), float32] */;
+  %5 = expand_dims(%b2, axis=0) /* ty=Tensor[(1, 200), float32] */;
+  %6 = (%4, %5) /* ty=(Tensor[(1, 200), float32], Tensor[(1, 200), float32]) */;
+  %7 = nn.batch_matmul(%2, %3, transpose_b=True) /* ty=Tensor[(2, 100, 200), float32] */;
+  %8 = stack(%6) /* ty=Tensor[(2, 1, 200), float32] */;
+  %9 = expand_dims(%scale1, axis=0) /* ty=Tensor[(1, 1), float32] */;
+  %10 = expand_dims(%scale2, axis=0) /* ty=Tensor[(1, 1), float32] */;
+  %11 = (%9, %10) /* ty=(Tensor[(1, 1), float32], Tensor[(1, 1), float32]) */;
+  %12 = add(%7, %8) /* ty=Tensor[(2, 100, 200), float32] */;
+  %13 = stack(%11) /* ty=Tensor[(2, 1, 1), float32] */;
+  %14 = multiply(%12, %13) /* ty=Tensor[(2, 100, 200), float32] */;
+  %15 = split(%14, indices_or_sections=2) /* ty=(Tensor[(1, 100, 200), float32], Tensor[(1, 100, 200), float32]) */;
+  %16 = %15.0 /* ty=Tensor[(1, 100, 200), float32] */;
+  %17 = squeeze(%16, axis=[0]) /* ty=Tensor[(100, 200), float32] */;
+  %18 = %15.1 /* ty=Tensor[(1, 100, 200), float32] */;
+  %19 = squeeze(%18, axis=[0]) /* ty=Tensor[(100, 200), float32] */;
+  %20 = reshape(%17, newshape=[1, 1, 20000]) /* ty=Tensor[(1, 1, 20000), float32] */;
+  %21 = reshape(%19, newshape=[1, 1, 20000]) /* ty=Tensor[(1, 1, 20000), float32] */;
+  (%20, %21) /* ty=(Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 20000), float32]) */
+} /* ty=fn (Tensor[(100, 300), float32], Tensor[(200, 300), float32], Tensor[(200, 300), float32], Tensor[(200), float32], Tensor[(200), float32], Tensor[(1), float32], Tensor[(1), float32]) -> (Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 20000), float32]) */

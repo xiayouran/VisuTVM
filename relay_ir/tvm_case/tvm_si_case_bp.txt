@@ -1,0 +1,7 @@
+fn (%x: Tensor[(10, 10, 10, 10), float32], %beta: Tensor[(10), float32], %gamma: Tensor[(10), float32], %moving_var: Tensor[(10), float32], %moving_mean: Tensor[(10), float32]) {
+  %0 = add(%x, 1f);
+  %1 = nn.batch_norm(%0, %gamma, %beta, %moving_mean, %moving_var, epsilon=0.01f);
+  %2 = %1.0;
+  %3 = nn.dropout(%2);
+  %3.0
+}

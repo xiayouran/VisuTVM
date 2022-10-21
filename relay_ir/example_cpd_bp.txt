@@ -1,0 +1,13 @@
+fn (%input0: Tensor[(1, 100), float32], %linear.weight: Tensor[(100, 100), float32]) {
+  %0 = transpose(%linear.weight, axes=[1, 0]);
+  %1 = transpose(%0, axes=[1, 0]);
+  %2 = transpose(%linear.weight, axes=[1, 0]);
+  %3 = transpose(%2, axes=[1, 0]);
+  %4 = nn.dense(%input0, %1, units=None);
+  %5 = nn.dense(%input0, %3, units=None);
+  %6 = transpose(%linear.weight, axes=[1, 0]);
+  %7 = transpose(%6, axes=[1, 0]);
+  %8 = add(%4, %5);
+  %9 = nn.dense(%input0, %7, units=None);
+  add(%8, %9)
+}

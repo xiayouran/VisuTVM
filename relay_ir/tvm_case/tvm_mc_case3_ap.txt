@@ -1,0 +1,9 @@
+fn (%a: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %b: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */) -> Tensor[(10, 10), float32] {
+  %2 = subtract(%a, %b) /* ty=Tensor[(10, 10), float32] */;
+  %3 = fn (%FunctionVar_0_0: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %FunctionVar_0_1: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, PartitionedFromPattern="add_add_add_", Composite="add_add_add") -> Tensor[(10, 10), float32] {
+    %0 = add(%FunctionVar_0_0, %FunctionVar_0_1) /* ty=Tensor[(10, 10), float32] */;
+    %1 = add(%FunctionVar_0_0, %0) /* ty=Tensor[(10, 10), float32] */;
+    add(%1, %0) /* ty=Tensor[(10, 10), float32] */
+  } /* ty=fn (Tensor[(10, 10), float32], Tensor[(10, 10), float32]) -> Tensor[(10, 10), float32] */;
+  %3(%2, %b) /* ty=Tensor[(10, 10), float32] */
+} /* ty=fn (Tensor[(10, 10), float32], Tensor[(10, 10), float32]) -> Tensor[(10, 10), float32] */

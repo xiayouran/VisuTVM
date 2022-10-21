@@ -1,0 +1,6 @@
+fn (%x: Tensor[(2, 4, 10, 10), float32], %weight, %in_bias: Tensor[(4, 1, 1), float32]) {
+  %0 = multiply(%x, meta[relay.Constant][0]);
+  %1 = nn.relu(%0);
+  %2 = add(%1, %in_bias);
+  nn.conv2d(%2, %weight, padding=[1, 1, 1, 1], channels=2, kernel_size=[3, 3])
+}

@@ -1,0 +1,4 @@
+fn (%shape_like: Tensor[(3, 4, 5), int32] /* ty=Tensor[(3, 4, 5), int32] */) -> Tensor[(3, 4, 5), int32] {
+  %0 = ones(shape=[3, 4, 5], dtype="int32") /* ty=Tensor[(3, 4, 5), int32] */;
+  add(%0, 1 /* ty=int32 */) /* ty=Tensor[(3, 4, 5), int32] */
+} /* ty=fn (Tensor[(3, 4, 5), int32]) -> Tensor[(3, 4, 5), int32] */

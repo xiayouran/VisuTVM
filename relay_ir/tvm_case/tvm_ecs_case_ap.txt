@@ -1,0 +1,5 @@
+fn (%x: Tensor[(1, 16), float32] /* ty=Tensor[(1, 16), float32] */) -> Tensor[(1, 16), float32] {
+  %0 = nn.relu(%x) /* ty=Tensor[(1, 16), float32] */;
+  %1 = add(%0, 1f /* ty=float32 */) /* ty=Tensor[(1, 16), float32] */;
+  add(%1, %1) /* ty=Tensor[(1, 16), float32] */
+} /* ty=fn (Tensor[(1, 16), float32]) -> Tensor[(1, 16), float32] */

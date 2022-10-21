@@ -1,0 +1,8 @@
+fn (%x: Tensor[(10, 20), float32] /* ty=Tensor[(10, 20), float32] */) -> Tensor[(10, 20), float32] {
+  %2 = fn (%p0: Tensor[(10, 20), float32] /* ty=Tensor[(10, 20), float32] */, Primitive=1) -> Tensor[(10, 20), float32] {
+    %0 = add(%p0, 1f /* ty=float32 */) /* ty=Tensor[(10, 20), float32] */;
+    %1 = exp(%0) /* ty=Tensor[(10, 20), float32] */;
+    squeeze(%1) /* ty=Tensor[(10, 20), float32] */
+  } /* ty=fn (Tensor[(10, 20), float32]) -> Tensor[(10, 20), float32] */;
+  %2(%x) /* ty=Tensor[(10, 20), float32] */
+} /* ty=fn (Tensor[(10, 20), float32]) -> Tensor[(10, 20), float32] */

@@ -1,0 +1,5 @@
+fn (%x: Tensor[(10, 20), float32]) {
+  %0 = add(%x, 1f);
+  %1 = exp(%0);
+  squeeze(%1)
+}

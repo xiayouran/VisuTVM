@@ -1,0 +1,11 @@
+fn (%x: Tensor[(1, 56, 56, 64), float32] /* ty=Tensor[(1, 56, 56, 64), float32] */, %weight: Tensor[(3, 3, 64, 64), float32] /* ty=Tensor[(3, 3, 64, 64), float32] */, %bias: Tensor[(64), float32] /* ty=Tensor[(64), float32] */) -> Tensor[(1, 193600), int32] {
+  %0 = layout_transform(%x, src_layout="NHWC", dst_layout="NCHW") /* ty=Tensor[(1, 64, 56, 56), float32] */;
+  %1 = layout_transform(%weight, src_layout="HWIO", dst_layout="OIHW") /* ty=Tensor[(64, 64, 3, 3), float32] */;
+  %2 = nn.conv2d(%0, %1, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+  %3 = layout_transform(%2, src_layout="NCHW", dst_layout="NHWC") /* ty=Tensor[(1, 56, 56, 64), float32] */;
+  %4 = nn.bias_add(%3, %bias, axis=3) /* ty=Tensor[(1, 56, 56, 64), float32] */;
+  %5 = nn.relu(%4) /* ty=Tensor[(1, 56, 56, 64), float32] */;
+  %6 = nn.max_pool2d(%5, pool_size=[2, 2], padding=[0, 0, 0, 0], layout="NHWC", out_layout="NHWC") /* ty=Tensor[(1, 55, 55, 64), float32] */;
+  %7 = cast(%6, dtype="int32") /* ty=Tensor[(1, 55, 55, 64), int32] */;
+  nn.batch_flatten(%7) /* ty=Tensor[(1, 193600), int32] */
+} /* ty=fn (Tensor[(1, 56, 56, 64), float32], Tensor[(3, 3, 64, 64), float32], Tensor[(64), float32]) -> Tensor[(1, 193600), int32] */

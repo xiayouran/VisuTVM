@@ -1,0 +1,7 @@
+fn (%x: Tensor[(3, 4), float32], %w1: Tensor[(5, 4), float32], %w2: Tensor[(10, 4), float32], %b1: Tensor[(5), float32], %b2: Tensor[(1), float32]) {
+  %0 = nn.dense(%x, %w1, units=None);
+  %1 = nn.dense(%x, %w2, units=None);
+  %2 = add(%0, %b1);
+  %3 = add(%1, %b2);
+  (%2, %3)
+}

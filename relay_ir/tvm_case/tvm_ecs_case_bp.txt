@@ -1,0 +1,7 @@
+fn (%x: Tensor[(1, 16), float32]) {
+  %0 = nn.relu(%x);
+  %1 = nn.relu(%x);
+  %2 = add(%0, 1f);
+  %3 = add(%1, 1f);
+  add(%2, %3)
+}

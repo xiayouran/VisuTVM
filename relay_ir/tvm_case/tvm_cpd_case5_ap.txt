@@ -1,0 +1,18 @@
+fn (%x: Tensor[(100, 300), float32] /* ty=Tensor[(100, 300), float32] */, %w1: Tensor[(200, 300), float32] /* ty=Tensor[(200, 300), float32] */, %w2: Tensor[(400, 300), float32] /* ty=Tensor[(400, 300), float32] */, %b1: Tensor[(200), float32] /* ty=Tensor[(200), float32] */, %b2: Tensor[(400), float32] /* ty=Tensor[(400), float32] */, %scale1: Tensor[(1), float32] /* ty=Tensor[(1), float32] */, %scale2: Tensor[(1), float32] /* ty=Tensor[(1), float32] */) -> (Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 40000), float32]) {
+  %0 = (%w1, %w2) /* ty=(Tensor[(200, 300), float32], Tensor[(400, 300), float32]) */;
+  %1 = concatenate(%0) /* ty=Tensor[(600, 300), float32] */;
+  %2 = (%b1, %b2) /* ty=(Tensor[(200), float32], Tensor[(400), float32]) */;
+  %3 = nn.dense(%x, %1, units=600) /* ty=Tensor[(100, 600), float32] */;
+  %4 = concatenate(%2) /* ty=Tensor[(600), float32] */;
+  %5 = repeat(%scale1, repeats=200, axis=0) /* ty=Tensor[(200), float32] */;
+  %6 = repeat(%scale2, repeats=400, axis=0) /* ty=Tensor[(400), float32] */;
+  %7 = (%5, %6) /* ty=(Tensor[(200), float32], Tensor[(400), float32]) */;
+  %8 = add(%3, %4) /* ty=Tensor[(100, 600), float32] */;
+  %9 = concatenate(%7) /* ty=Tensor[(600), float32] */;
+  %10 = multiply(%8, %9) /* ty=Tensor[(100, 600), float32] */;
+  %11 = strided_slice(%10, begin=[0, 0], end=[-1, 200], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(100, 200), float32] */;
+  %12 = strided_slice(%10, begin=[0, 200], end=[-1, 400], strides=[1, 1], slice_mode="size", axes=None) /* ty=Tensor[(100, 400), float32] */;
+  %13 = reshape(%11, newshape=[1, 1, 20000]) /* ty=Tensor[(1, 1, 20000), float32] */;
+  %14 = reshape(%12, newshape=[1, 1, 40000]) /* ty=Tensor[(1, 1, 40000), float32] */;
+  (%13, %14) /* ty=(Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 40000), float32]) */
+} /* ty=fn (Tensor[(100, 300), float32], Tensor[(200, 300), float32], Tensor[(400, 300), float32], Tensor[(200), float32], Tensor[(400), float32], Tensor[(1), float32], Tensor[(1), float32]) -> (Tensor[(1, 1, 20000), float32], Tensor[(1, 1, 40000), float32]) */

@@ -1,0 +1,15 @@
+fn (%a: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %b: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %c: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */) -> Tensor[(10, 10), float32] {
+  %4 = fn (%FunctionVar_1_0: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %FunctionVar_1_1: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, PartitionedFromPattern="add_subtract_multiply_", Composite="add_sub_mul") -> Tensor[(10, 10), float32] {
+    %2 = add(%FunctionVar_1_0, %FunctionVar_1_1) /* ty=Tensor[(10, 10), float32] */;
+    %3 = subtract(%FunctionVar_1_0, %FunctionVar_1_1) /* ty=Tensor[(10, 10), float32] */;
+    multiply(%2, %3) /* ty=Tensor[(10, 10), float32] */
+  } /* ty=fn (Tensor[(10, 10), float32], Tensor[(10, 10), float32]) -> Tensor[(10, 10), float32] */;
+  %5 = %4(%a, %b) /* ty=Tensor[(10, 10), float32] */;
+  %6 = fn (%FunctionVar_0_0: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, %FunctionVar_0_1: Tensor[(10, 10), float32] /* ty=Tensor[(10, 10), float32] */, PartitionedFromPattern="add_subtract_multiply_", Composite="add_sub_mul") -> Tensor[(10, 10), float32] {
+    %0 = add(%FunctionVar_0_0, %FunctionVar_0_1) /* ty=Tensor[(10, 10), float32] */;
+    %1 = subtract(%FunctionVar_0_0, %FunctionVar_0_1) /* ty=Tensor[(10, 10), float32] */;
+    multiply(%0, %1) /* ty=Tensor[(10, 10), float32] */
+  } /* ty=fn (Tensor[(10, 10), float32], Tensor[(10, 10), float32]) -> Tensor[(10, 10), float32] */;
+  %7 = %6(%c, %5) /* ty=Tensor[(10, 10), float32] */;
+  nn.relu(%7) /* ty=Tensor[(10, 10), float32] */
+} /* ty=fn (Tensor[(10, 10), float32], Tensor[(10, 10), float32], Tensor[(10, 10), float32]) -> Tensor[(10, 10), float32] */

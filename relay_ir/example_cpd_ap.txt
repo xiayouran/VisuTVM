@@ -1,0 +1,22 @@
+fn (%input0: Tensor[(1, 100), float32] /* ty=Tensor[(1, 100), float32] */, %linear.weight: Tensor[(100, 100), float32] /* ty=Tensor[(100, 100), float32] */) -> Tensor[(1, 100), float32] {
+  %0 = (%input0, %input0, %input0) /* ty=(Tensor[(1, 100), float32], Tensor[(1, 100), float32], Tensor[(1, 100), float32]) */;
+  %1 = transpose(%linear.weight, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %2 = transpose(%linear.weight, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %3 = transpose(%linear.weight, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %4 = transpose(%1, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %5 = transpose(%2, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %6 = transpose(%3, axes=[1, 0]) /* ty=Tensor[(100, 100), float32] */;
+  %7 = (%4, %5, %6) /* ty=(Tensor[(100, 100), float32], Tensor[(100, 100), float32], Tensor[(100, 100), float32]) */;
+  %8 = stack(%0) /* ty=Tensor[(3, 1, 100), float32] */;
+  %9 = stack(%7) /* ty=Tensor[(3, 100, 100), float32] */;
+  %10 = nn.batch_matmul(%8, %9, transpose_b=True) /* ty=Tensor[(3, 1, 100), float32] */;
+  %11 = split(%10, indices_or_sections=3) /* ty=(Tensor[(1, 1, 100), float32], Tensor[(1, 1, 100), float32], Tensor[(1, 1, 100), float32]) */;
+  %12 = %11.0 /* ty=Tensor[(1, 1, 100), float32] */;
+  %13 = %11.1 /* ty=Tensor[(1, 1, 100), float32] */;
+  %14 = squeeze(%12, axis=[0]) /* ty=Tensor[(1, 100), float32] */;
+  %15 = squeeze(%13, axis=[0]) /* ty=Tensor[(1, 100), float32] */;
+  %16 = %11.2 /* ty=Tensor[(1, 1, 100), float32] */;
+  %17 = add(%14, %15) /* ty=Tensor[(1, 100), float32] */;
+  %18 = squeeze(%16, axis=[0]) /* ty=Tensor[(1, 100), float32] */;
+  add(%17, %18) /* ty=Tensor[(1, 100), float32] */
+} /* ty=fn (Tensor[(1, 100), float32], Tensor[(100, 100), float32]) -> Tensor[(1, 100), float32] */

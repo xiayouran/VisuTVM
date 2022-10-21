@@ -1,0 +1,6 @@
+fn (%x: Tensor[(1, 16, 16, 16), float32], %w: Tensor[(32, 16, 3, 3), float32]) {
+  %0 = nn.conv2d(%x, %w, padding=[1, 1, 1, 1]);
+  %1 = add(%0, meta[relay.Constant][0]);
+  %2 = add(%1, meta[relay.Constant][1]);
+  nn.relu(%2)
+}

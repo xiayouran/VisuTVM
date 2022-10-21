@@ -1,0 +1,9 @@
+fn (%x: Tensor[(1, 8), float32] /* ty=Tensor[(1, 8), float32] */, %gamma: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %beta: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %moving_mean: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %moving_var: Tensor[(8), float32] /* ty=Tensor[(8), float32] */) -> Tensor[(1, 8), float32] {
+  %2 = fn (%FunctionVar_0_0: Tensor[(1, 8), float32] /* ty=Tensor[(1, 8), float32] */, %FunctionVar_0_1: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %FunctionVar_0_2: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %FunctionVar_0_3: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, %FunctionVar_0_4: Tensor[(8), float32] /* ty=Tensor[(8), float32] */, PartitionedFromPattern="nn.batch_norm_TupleGetItem0_nn.relu_", Composite="bn_relu") -> Tensor[(1, 8), float32] {
+    %0 = nn.batch_norm(%FunctionVar_0_0, %FunctionVar_0_1, %FunctionVar_0_2, %FunctionVar_0_3, %FunctionVar_0_4) /* ty=(Tensor[(1, 8), float32], Tensor[(8), float32], Tensor[(8), float32]) */;
+    %1 = %0.0 /* ty=Tensor[(1, 8), float32] */;
+    nn.relu(%1) /* ty=Tensor[(1, 8), float32] */
+  } /* ty=fn (Tensor[(1, 8), float32], Tensor[(8), float32], Tensor[(8), float32], Tensor[(8), float32], Tensor[(8), float32]) -> Tensor[(1, 8), float32] */;
+  %3 = %2(%x, %gamma, %beta, %moving_mean, %moving_var) /* ty=Tensor[(1, 8), float32] */;
+  add(%3, 0.1f /* ty=float32 */) /* ty=Tensor[(1, 8), float32] */
+} /* ty=fn (Tensor[(1, 8), float32], Tensor[(8), float32], Tensor[(8), float32], Tensor[(8), float32], Tensor[(8), float32]) -> Tensor[(1, 8), float32] */

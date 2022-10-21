@@ -1,0 +1,14 @@
+fn (%input0: Tensor[(1, 10), float32], %input1: Tensor[(1, 10), float32]) {
+  %0 = power(%input0, 2f);
+  %1 = sin(%input1);
+  %2 = power(%1, 2f);
+  %3 = cos(%input1);
+  %4 = power(%3, 2f);
+  %5 = multiply(%input0, %2);
+  %6 = multiply(%input0, %4);
+  %7 = add(%input0, %0);
+  %8 = add(%5, %6);
+  %9 = divide(%7, %8);
+  %10 = tanh(%9);
+  nn.softmax(%10, axis=0)
+}

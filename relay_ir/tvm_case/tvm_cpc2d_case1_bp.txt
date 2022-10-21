@@ -1,0 +1,8 @@
+fn (%x: Tensor[(1, 4, 16, 16), float32], %w1: Tensor[(4, 4, 1, 1), float32], %w2: Tensor[(8, 4, 1, 1), float32], %w3: Tensor[(4, 4, 3, 3), float32], %w4: Tensor[(7, 4, 1, 1), float32]) {
+  %0 = nn.conv2d(%x, %w1, padding=[0, 0, 0, 0]);
+  %1 = nn.conv2d(%x, %w2, padding=[0, 0, 0, 0]);
+  %2 = nn.conv2d(%x, %w3, padding=[0, 0, 0, 0]);
+  %3 = nn.conv2d(%x, %w4, padding=[0, 0, 0, 0]);
+  %4 = nn.max_pool2d(%x, pool_size=[1, 1], padding=[0, 0, 0, 0]);
+  (%0, %1, %2, %3, %4)
+}

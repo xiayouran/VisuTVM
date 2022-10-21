@@ -1,0 +1,7 @@
+fn (%x: Tensor[(3, 5), float32] /* ty=Tensor[(3, 5), float32] */, %weight: Tensor[(4, 5), float32] /* ty=Tensor[(4, 5), float32] */, %in_bias: Tensor[(5), float32] /* ty=Tensor[(5), float32] */) -> Tensor[(3, 4), float32] {
+  %0 = nn.relu(%x) /* ty=Tensor[(3, 5), float32] */;
+  %1 = divide(%in_bias, meta[relay.Constant][0] /* ty=Tensor[(5), float32] */) /* ty=Tensor[(5), float32] */;
+  %2 = add(%0, %1) /* ty=Tensor[(3, 5), float32] */;
+  %3 = multiply(%weight, meta[relay.Constant][0] /* ty=Tensor[(5), float32] */) /* ty=Tensor[(4, 5), float32] */;
+  nn.dense(%2, %3, units=None) /* ty=Tensor[(3, 4), float32] */
+} /* ty=fn (Tensor[(3, 5), float32], Tensor[(4, 5), float32], Tensor[(5), float32]) -> Tensor[(3, 4), float32] */

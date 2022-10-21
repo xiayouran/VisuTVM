@@ -1,0 +1,6 @@
+fn (%data: Tensor[(1, 5, 5, 4), float32]) {
+  %0 = nn.space_to_batch_nd(%data, block_shape=[2, 2], paddings=[[2, 3], [2, 3]]);
+  %1 = nn.conv2d(%0, meta[relay.Constant][0], padding=[0, 0, 0, 0], groups=4, channels=4, kernel_size=[3, 3], data_layout="NHWC", kernel_layout="HWOI");
+  %2 = nn.batch_to_space_nd(%1, block_shape=[2, 2], crops=[[0, 1], [0, 1]]);
+  add(%2, 0.1f)
+}

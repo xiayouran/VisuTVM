@@ -1,0 +1,6 @@
+fn (%x: Tensor[(1, 8), float32], %gamma: Tensor[(8), float32], %beta: Tensor[(8), float32], %moving_mean: Tensor[(8), float32], %moving_var: Tensor[(8), float32]) {
+  %0 = nn.batch_norm(%x, %gamma, %beta, %moving_mean, %moving_var);
+  %1 = %0.0;
+  %2 = nn.relu(%1);
+  add(%2, 0.1f)
+}
