@@ -11,6 +11,14 @@ import numpy as np
 from visu_tvm import VisuGraph, VisuGraphFuseOps, VisuGraphRUF, VisuGraphMC
 
 
+FO_LIST = ['FuseOps', 'AllPass']
+RUF_LIST = ['RemoveUnusedFunctions', 'ToBasicBlockNormalForm', 'EliminateCommonSubexpr', 'FoldConstant',
+            'SimplifyInference', 'CombineParallelConv2D', 'CombineParallelDense', 'CombineParallelBatchMatmul',
+            'FoldScaleAxis', 'SimplifyExpr', 'CanonicalizeCast', 'CanonicalizeOps', 'FlattenAtrousConv', 'FastMath',
+            'ConvertLayout']
+MC_LIST = ['MergeComposite']
+
+
 def relay_ir2txt(context, file_name='example', is_ap=False):
     save_path = 'relay_ir'
     if not os.path.exists(save_path):
@@ -43,6 +51,24 @@ def visu_relay_ir(bp_file, ap_file, save_name, with_info=False):
         #  有些Pass在优化神经网络(目前只在resnet18上进行了测试)的时候可能不起作用，因此Pass优化前后的可视化结果是一样的
         g = VisuGraphRUF(txt_file=ap_file, save_name=save_name, with_info=with_info)
     g.codegen()
+
+
+def visu_relay_ir_single(ir_file, save_name, pass_name='', with_info=False):
+    if not pass_name:
+        g = VisuGraph(txt_file=ir_file, save_name=save_name, with_info=with_info)
+        g.codegen()
+    else:
+        if pass_name in FO_LIST:
+            g = VisuGraphFuseOps(txt_file=ir_file, save_name=save_name, with_info=with_info)
+            g.codegen()
+        elif pass_name in RUF_LIST:
+            g = VisuGraphRUF(txt_file=ir_file, save_name=save_name, with_info=with_info)
+            g.codegen()
+        elif pass_name in MC_LIST:
+            g = VisuGraphMC(txt_file=ir_file, save_name=save_name, with_info=with_info)
+            g.codegen()
+        else:
+            warnings.warn("not support the pass to visu now! ==> [pass: {}, file: {}]".format(pass_name, ir_file))
 
 
 def run_all_examples(scan_dir='relay_ir', with_info=False):

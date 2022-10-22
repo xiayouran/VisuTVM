@@ -31,7 +31,15 @@ python main.py -bp relay_ir/example_fo_bp.txt -ap relay_ir/example_fo_ap.txt -sn
 # visu relay ir with tensor info
 python main.py -bp relay_ir/example_fo_bp.txt -ap relay_ir/example_fo_ap.txt -sn example -wi
 
-# create relay ir txt file
+# if you only have one relay ir file(before pass file or after pass file), 
+# you can run the following command
+# input unoptimized relay ir file(before pass file)
+python main.py -ri relay_ir/mobilenet_v2_fo_bp.txt -sn mobilenet_v2
+
+# input optimized relay ir file(after pass file) and specify the pass name
+python main.py -ri relay_ir/resnet18_all_pass.txt -pn AllPass -sn resnet18 -wi
+
+# create relay ir txt file(depend on TVM environment)
 python examples/example.py --passname FuseOps
 ```
 
