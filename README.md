@@ -74,21 +74,21 @@ python examples/example.py --passname FuseOps
 
 ## Preview
 
-🚀️ EliminateCommonSubexpr Pass
+🚀️ EliminateCommonSubexpr
 
 <table align="center"><tr>
 <td><img src="imgs/eliminate_common_subexpr_bp.png"></td>
 <td><img src="imgs/eliminate_common_subexpr_ap.png"></td>
 </tr></table>
 
-🚀️ FoldConstant Pass
+🚀️ FoldConstant
 
 <table align="center"><tr>
 <td><img src="imgs/fold_constant_bp.png"></td>
 <td><img src="imgs/fold_constant_ap.png"></td>
 </tr></table>
 
-🚀️ SimplifyInference Pass
+🚀️ SimplifyInference
 
 <table align="center"><tr>
 <td><img src="imgs/simplify_inference_bp.png"></td>
@@ -107,6 +107,12 @@ python examples/example.py --passname FuseOps
 <table align="center"><tr>
 <td><img src="imgs/flatten_atrous_conv_bp.png"></td>
 <td><img src="imgs/flatten_atrous_conv_ap.png"></td>
+</tr></table>
+
+🚀️ All Pass with tensor info
+
+<table align="center"><tr>
+<td><img src="imgs/resnet18_allpass.svg"></td>
 </tr></table>
 
 ## Q&A
