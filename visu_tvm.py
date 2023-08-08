@@ -117,7 +117,7 @@ class VisuGraph(object):
         graph.render(filename=self.save_name, format='svg', cleanup=True)
 
     def get_node_args(self, output_node, body_node):
-        pattern1 = re.compile(r'(%[a-zA-Z]*([\d._a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
+        pattern1 = re.compile(r'(%[a-zA-Z]*:*([\d._a-z]*\d*)*|meta\[relay\.Constant]\[\d*])')
         pattern2 = re.compile(r'(%[a-z]?\d+\.\d+)')
 
         if '(%' not in body_node:
@@ -159,10 +159,21 @@ class VisuGraph(object):
             if not args_list and not index:
                 continue
 
+            for i in range(len(args_list)):
+                arg_str = args_list[i]
+                if '::' in arg_str:
+                    # fix the 'colons in node identifiers' bug
+                    # https://github.com/xflr6/graphviz/issues/53
+                    args_list[i] = arg_str.replace('::', '--')
+
             self.nodes[info[0]] = IRNode(name=info[0], label=info[1][:index], inputs=args_list)
             for n in args_list:
                 if not self.nodes.get(n, ''):
-                    self.nodes[n] = IRNode(name=n, label=n, color='white')
+                    if '--' in n:
+                        n_ = n.replace('--', '::')
+                        self.nodes[n] = IRNode(name=n_, label=n_, color='white')
+                    else:
+                        self.nodes[n] = IRNode(name=n, label=n, color='white')
 
         # 在图的末尾添加一个空节点
         # TODO Multi-output bug
